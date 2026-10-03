@@ -31,7 +31,7 @@ The extension also has an **external check-only compiler adapter**. Set:
 The default argument template is:
 
 ```text
---check --diagnostic-format=plain {file}
+--check {file}
 ```
 
 The current Oreslang launcher does not yet expose a check-only mode, so the compiler command is blank by default. This prevents the editor from accidentally executing the program just to obtain diagnostics. Once the compiler exposes check-only diagnostics, configure its executable and VS Code will add compiler/type errors to the same editor workflow.
