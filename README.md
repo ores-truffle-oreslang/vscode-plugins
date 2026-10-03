@@ -23,18 +23,18 @@ Built-in diagnostics run without a compiler process and currently catch:
 
 The scanner intentionally ignores keyword-looking text inside strings and comments.
 
-The extension also has an **external check-only compiler adapter**. Set:
-
-- `oreslang.compiler.command`
-- `oreslang.compiler.args`
-
-The default argument template is:
+Authoritative diagnostics come through the canonical Oreslang developer-tooling CLI:
 
 ```text
---check {file}
+oreslang check --format=json {file}
 ```
 
-The current Oreslang launcher does not yet expose a check-only mode, so the compiler command is blank by default. This prevents the editor from accidentally executing the program just to obtain diagnostics. Once the compiler exposes check-only diagnostics, configure its executable and VS Code will add compiler/type errors to the same editor workflow.
+The defaults are:
+
+- `oreslang.cli.command = "oreslang"`
+- `oreslang.cli.args = ["check", "--format=json", "{file}"]`
+
+The extension does not call `ORESoftware/ores-cli`, does not call a command named `ores`, and does not invoke the Java compiler directly. `oreslang-cli` owns the editor-facing process contract and delegates safely to the non-executing compiler backend.
 
 Use **Oreslang: Check Current File** to run an explicit compiler check.
 
