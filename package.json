@@ -68,7 +68,7 @@
         "oreslang.compiler.args": {
           "type": "array",
           "items": { "type": "string" },
-          "default": ["--check", "--diagnostic-format=plain", "{file}"],
+          "default": ["--check", "{file}"],
           "description": "Arguments for the external compiler. {file} and {workspaceFolder} are substituted."
         },
         "oreslang.compiler.runOnSave": {
