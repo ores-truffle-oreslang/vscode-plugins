@@ -24,8 +24,14 @@
     "languages": [
       {
         "id": "oreslang",
-        "aliases": ["Oreslang", "oreslang", "ores"],
-        "extensions": [".ores"],
+        "aliases": [
+          "Oreslang",
+          "oreslang",
+          "ores"
+        ],
+        "extensions": [
+          ".ores"
+        ],
         "configuration": "./language-configuration.json"
       }
     ],
@@ -60,27 +66,33 @@
           "default": true,
           "description": "Enable built-in lexical and structural diagnostics."
         },
-        "oreslang.compiler.command": {
+        "oreslang.cli.command": {
           "type": "string",
-          "default": "",
-          "description": "Optional check-only Oreslang compiler executable. Leave blank to disable external compiler diagnostics."
+          "default": "oreslang",
+          "description": "Oreslang developer-tooling CLI executable."
         },
-        "oreslang.compiler.args": {
+        "oreslang.cli.args": {
           "type": "array",
-          "items": { "type": "string" },
-          "default": ["--check", "{file}"],
-          "description": "Arguments for the external compiler. {file} and {workspaceFolder} are substituted."
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "check",
+            "--format=json",
+            "{file}"
+          ],
+          "description": "Arguments for the Oreslang CLI. {file} and {workspaceFolder} are substituted."
         },
-        "oreslang.compiler.runOnSave": {
+        "oreslang.cli.runOnSave": {
           "type": "boolean",
           "default": true,
-          "description": "Run the configured external compiler after saving an Oreslang file."
+          "description": "Run `oreslang check` after saving an Oreslang file."
         },
-        "oreslang.compiler.timeoutMs": {
+        "oreslang.cli.timeoutMs": {
           "type": "number",
           "default": 10000,
           "minimum": 100,
-          "description": "Timeout for an external compiler check."
+          "description": "Timeout for an `oreslang check` invocation."
         }
       }
     }
