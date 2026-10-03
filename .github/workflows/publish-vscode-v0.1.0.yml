@@ -1,0 +1,39 @@
+name: Publish VS Code Marketplace v0.1.0
+
+on:
+  push:
+    branches:
+      - publish/v0.1.0
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Test
+        run: npm test
+      - name: Package VSIX
+        run: npx --yes @vscode/vsce@latest package --out oreslang-vscode-0.1.0.vsix
+      - name: Upload VSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: oreslang-vscode-0.1.0
+          path: oreslang-vscode-0.1.0.vsix
+      - name: Verify Marketplace credential
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          if [ -z "$VSCE_PAT" ]; then
+            echo "::error::VSCE_PAT repository or organization secret is not configured"
+            exit 1
+          fi
+      - name: Publish to Visual Studio Marketplace
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: npx --yes @vscode/vsce@latest publish --pat "$VSCE_PAT"
