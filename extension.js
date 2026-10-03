@@ -95,22 +95,22 @@ function parseCompilerOutput(document, output) {
     const lineNumber = item.line - 1;
     const column = item.column - 1;
     const start = new vscode.Position(lineNumber, column);
-    const end = new vscode.Position(lineNumber, column + 1);
+    const end = new vscode.Position(Math.max(lineNumber, item.endLine - 1), Math.max(column + 1, item.endColumn - 1));
     const diagnostic = new vscode.Diagnostic(
       new vscode.Range(start, end),
       item.message,
       severityFor(item.severity)
     );
-    diagnostic.source = 'oreslang compiler';
+    diagnostic.source = 'oreslang';
     return diagnostic;
   });
 }
 
 function expandCompilerArgs(document) {
-  const cfg = vscode.workspace.getConfiguration('oreslang.compiler');
+  const cfg = vscode.workspace.getConfiguration('oreslang.cli');
   const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
   const workspacePath = workspaceFolder ? workspaceFolder.uri.fsPath : path.dirname(document.uri.fsPath);
-  const args = cfg.get('args', ['--check', '{file}']);
+  const args = cfg.get('args', ['check', '--format=json', '{file}']);
 
   return args.map(value => String(value)
     .replaceAll('{file}', document.uri.fsPath)
@@ -120,27 +120,27 @@ function expandCompilerArgs(document) {
 async function runCompilerCheck(document, interactive) {
   if (!isOreslang(document)) return;
 
-  const cfg = vscode.workspace.getConfiguration('oreslang.compiler');
-  const command = String(cfg.get('command', '') || '').trim();
+  const cfg = vscode.workspace.getConfiguration('oreslang.cli');
+  const command = String(cfg.get('command', 'oreslang') || '').trim();
 
   if (!command) {
     compilerDiagnostics.delete(document.uri);
     if (interactive) {
       vscode.window.showInformationMessage(
-        'Oreslang external compiler checks are disabled. Set oreslang.compiler.command to a check-only compiler executable.'
+        'Oreslang CLI checks are disabled. Set oreslang.cli.command to the canonical oreslang executable.'
       );
     }
     return;
   }
 
   if (document.uri.scheme !== 'file') {
-    if (interactive) vscode.window.showWarningMessage('Oreslang compiler checks require a file-backed document.');
+    if (interactive) vscode.window.showWarningMessage('Oreslang CLI checks require a file-backed document.');
     return;
   }
 
   if (document.isDirty) {
     if (interactive) {
-      vscode.window.showInformationMessage('Save the Oreslang file before running the external compiler check.');
+      vscode.window.showInformationMessage('Save the Oreslang file before running oreslang check.');
     }
     return;
   }
@@ -166,13 +166,13 @@ async function runCompilerCheck(document, interactive) {
           output.trim() || error.message,
           vscode.DiagnosticSeverity.Error
         );
-        diagnostic.source = 'oreslang compiler';
+        diagnostic.source = 'oreslang';
         diagnostics.push(diagnostic);
       }
 
       compilerDiagnostics.set(document.uri, diagnostics);
       if (interactive && !error && diagnostics.length === 0) {
-        vscode.window.showInformationMessage('Oreslang compiler check passed.');
+        vscode.window.showInformationMessage('oreslang check passed.');
       }
       resolve();
     });
@@ -192,7 +192,7 @@ function activate(context) {
     vscode.workspace.onDidSaveTextDocument(document => {
       refreshDocument(document);
       if (isOreslang(document) &&
-          vscode.workspace.getConfiguration('oreslang.compiler').get('runOnSave', true)) {
+          vscode.workspace.getConfiguration('oreslang.cli').get('runOnSave', true)) {
         runCompilerCheck(document, false);
       }
     }),
