@@ -1,0 +1,92 @@
+{
+  "name": "oreslang-vscode",
+  "displayName": "Oreslang",
+  "description": "Syntax highlighting, exact keyword colors, and editor diagnostics for Oreslang.",
+  "version": "0.1.0",
+  "publisher": "ores-truffle-oreslang",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters"
+  ],
+  "activationEvents": [
+    "onLanguage:oreslang",
+    "onCommand:oreslang.checkCurrentFile"
+  ],
+  "main": "./extension.js",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "oreslang",
+        "aliases": ["Oreslang", "oreslang", "ores"],
+        "extensions": [".ores"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "oreslang",
+        "scopeName": "source.oreslang",
+        "path": "./syntaxes/oreslang.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "oreslang.checkCurrentFile",
+        "title": "Oreslang: Check Current File"
+      }
+    ],
+    "configuration": {
+      "title": "Oreslang",
+      "properties": {
+        "oreslang.colors.keyword": {
+          "type": "string",
+          "default": "#FF00FF",
+          "description": "Exact editor color for Oreslang language keywords."
+        },
+        "oreslang.colors.runtimeGlobal": {
+          "type": "string",
+          "default": "#4169E1",
+          "description": "Exact editor color for Oreslang runtime globals such as recover, defer, throw, and raise."
+        },
+        "oreslang.diagnostics.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable built-in lexical and structural diagnostics."
+        },
+        "oreslang.compiler.command": {
+          "type": "string",
+          "default": "",
+          "description": "Optional check-only Oreslang compiler executable. Leave blank to disable external compiler diagnostics."
+        },
+        "oreslang.compiler.args": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["--check", "--diagnostic-format=plain", "{file}"],
+          "description": "Arguments for the external compiler. {file} and {workspaceFolder} are substituted."
+        },
+        "oreslang.compiler.runOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run the configured external compiler after saving an Oreslang file."
+        },
+        "oreslang.compiler.timeoutMs": {
+          "type": "number",
+          "default": 10000,
+          "minimum": 100,
+          "description": "Timeout for an external compiler check."
+        }
+      }
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ores-truffle-oreslang/vscode-plugins.git"
+  }
+}
