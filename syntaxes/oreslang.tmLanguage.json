@@ -1,0 +1,104 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Oreslang",
+  "scopeName": "source.oreslang",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#numbers" },
+    { "include": "#annotations" },
+    { "include": "#runtime-globals" },
+    { "include": "#keywords" },
+    { "include": "#function-declarations" },
+    { "include": "#types" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.oreslang",
+          "begin": "//",
+          "end": "$"
+        },
+        {
+          "name": "comment.block.oreslang",
+          "begin": "/\\*",
+          "end": "\\*/",
+          "patterns": [
+            { "include": "#comments" }
+          ]
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.oreslang",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            { "name": "constant.character.escape.oreslang", "match": "\\\\." }
+          ]
+        },
+        {
+          "name": "string.quoted.single.oreslang",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            { "name": "constant.character.escape.oreslang", "match": "\\\\." }
+          ]
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.oreslang",
+          "match": "\\b(?:\\d(?:[\\d_]*\\d)?(?:\\.\\d(?:[\\d_]*\\d)?)?(?:[eE][+-]?\\d(?:[\\d_]*\\d)?)?i?)\\b"
+        }
+      ]
+    },
+    "annotations": {
+      "patterns": [
+        {
+          "name": "meta.annotation.oreslang",
+          "match": "@[A-Za-z_][A-Za-z0-9_]*"
+        }
+      ]
+    },
+    "runtime-globals": {
+      "patterns": [
+        {
+          "name": "support.function.builtin.runtime.oreslang",
+          "match": "\\b(?:recover|defer|throw|raise)\\b"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.oreslang",
+          "match": "\\b(?:define|class|module|namespace|import|from|as|is|extends|implements|impl|try|catch|finally|end|fi|if|do|else|elif|elseif|then|new|done|await|async|nlex|lex|actor|isoactor|shared|gpu|def|fnc|routine|for|of|yield|super|switch|case|match|select|type|typeof|interface|abstract|struct|singleton|void|static|pub|private|return|val|const|let|mut|self|true|false|null|obj|arr)\\b"
+        }
+      ]
+    },
+    "function-declarations": {
+      "patterns": [
+        {
+          "match": "\\b(?:fnc|routine)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": { "name": "entity.name.function.oreslang" }
+          }
+        }
+      ]
+    },
+    "types": {
+      "patterns": [
+        {
+          "name": "entity.name.type.oreslang",
+          "match": "\\b[A-Z][A-Za-z0-9_]*\\b"
+        }
+      ]
+    }
+  }
+}
