@@ -130,7 +130,7 @@ function expandCompilerArgs(document) {
   const cfg = vscode.workspace.getConfiguration('oreslang.compiler');
   const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
   const workspacePath = workspaceFolder ? workspaceFolder.uri.fsPath : path.dirname(document.uri.fsPath);
-  const args = cfg.get('args', ['--check', '--diagnostic-format=plain', '{file}']);
+  const args = cfg.get('args', ['--check', '{file}']);
 
   return args.map(value => String(value)
     .replaceAll('{file}', document.uri.fsPath)
