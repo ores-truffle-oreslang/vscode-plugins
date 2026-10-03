@@ -39,3 +39,10 @@ test('reports unterminated strings and block comments', () => {
   assert.match(scanOreslang('"oops').diagnostics[0].message, /Unterminated string/);
   assert.match(scanOreslang('/* nope').diagnostics[0].message, /Unterminated block comment/);
 });
+
+
+test('handles an identifier ending exactly at EOF', () => {
+  const result = scanOreslang('pub');
+  assert.deepEqual(result.tokens.map(t => t.value), ['pub']);
+  assert.equal(result.diagnostics.length, 0);
+});
