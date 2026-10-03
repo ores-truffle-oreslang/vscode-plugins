@@ -4,6 +4,7 @@ const vscode = require('vscode');
 const childProcess = require('child_process');
 const path = require('path');
 const { scanOreslang } = require('./lib/scan');
+const { parseCompilerOutputRecords } = require('./lib/compiler-output');
 
 let keywordDecoration;
 let runtimeGlobalDecoration;
@@ -90,40 +91,19 @@ function scheduleRefresh(document) {
 }
 
 function parseCompilerOutput(document, output) {
-  const diagnostics = [];
-  const lines = String(output || '').split(/\r?\n/);
-
-  const oresPattern = /Oreslang(?:\s+\w+)?\s+error\s+at\s+(\d+):(\d+):\s*(.+)$/i;
-  const genericPattern = /(?:^|.*?:)(\d+):(\d+):\s*(?:(error|warning|hint)\s*:?\s*)?(.+)$/i;
-
-  for (const line of lines) {
-    let match = line.match(oresPattern);
-    let severity = 'error';
-    let message;
-
-    if (match) {
-      message = match[3];
-    } else {
-      match = line.match(genericPattern);
-      if (!match) continue;
-      severity = (match[3] || 'error').toLowerCase();
-      message = match[4];
-    }
-
-    const lineNumber = Math.max(0, Number(match[1]) - 1);
-    const column = Math.max(0, Number(match[2]) - 1);
+  return parseCompilerOutputRecords(output).map(item => {
+    const lineNumber = item.line - 1;
+    const column = item.column - 1;
     const start = new vscode.Position(lineNumber, column);
     const end = new vscode.Position(lineNumber, column + 1);
     const diagnostic = new vscode.Diagnostic(
       new vscode.Range(start, end),
-      message.trim(),
-      severityFor(severity)
+      item.message,
+      severityFor(item.severity)
     );
     diagnostic.source = 'oreslang compiler';
-    diagnostics.push(diagnostic);
-  }
-
-  return diagnostics;
+    return diagnostic;
+  });
 }
 
 function expandCompilerArgs(document) {
