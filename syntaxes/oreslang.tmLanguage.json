@@ -112,10 +112,38 @@
     "declarations": {
       "patterns": [
         {
-          "match": "\\b(define)\\s+(class|module|interface|trait|struct|actor|isoactor)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "match": "\\b(define)\\s+(?:(singleton|shared|untrusted|abstract)\\s+)?(class|module|interface|trait|struct|actor|isoactor)\\s+([A-Za-z_][A-Za-z0-9_]*)",
           "captures": {
             "1": {
               "name": "keyword.declaration.oreslang"
+            },
+            "2": {
+              "name": "storage.modifier.oreslang"
+            },
+            "3": {
+              "name": "storage.type.oreslang"
+            },
+            "4": {
+              "name": "entity.name.type.oreslang"
+            }
+          }
+        },
+        {
+          "match": "\\b(namespace)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.namespace.oreslang"
+            },
+            "2": {
+              "name": "entity.name.namespace.oreslang"
+            }
+          }
+        },
+        {
+          "match": "\\b(?:(shared|untrusted)\\s+)?(actor|isoactor)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "storage.modifier.oreslang"
             },
             "2": {
               "name": "storage.type.oreslang"
@@ -124,6 +152,10 @@
               "name": "entity.name.type.oreslang"
             }
           }
+        },
+        {
+          "name": "keyword.declaration.constructor.oreslang",
+          "match": "\\bconstructor\\b(?=\\s*\\()"
         },
         {
           "match": "\\b(fnc|routine)\\s+([A-Za-z_][A-Za-z0-9_]*)",
@@ -152,13 +184,27 @@
     "imports": {
       "patterns": [
         {
-          "match": "\\b(import)\\s+(actor|module|class|interface|trait|fnc|routine)\\b",
+          "match": "\\b(import)\\s+(actor|module|class|interface|trait|struct|type|types|fnc|routine)\\b",
           "captures": {
             "1": {
               "name": "keyword.control.import.oreslang"
             },
             "2": {
               "name": "storage.type.import.oreslang"
+            }
+          }
+        },
+        {
+          "match": "\\b(export)\\s+(entry)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "keyword.control.export.oreslang"
+            },
+            "2": {
+              "name": "keyword.declaration.entry.oreslang"
+            },
+            "3": {
+              "name": "entity.name.function.entry.oreslang"
             }
           }
         },
@@ -177,6 +223,17 @@
         {
           "name": "keyword.control.defer.oreslang",
           "match": "\\bdefer\\b"
+        },
+        {
+          "match": "\\b(rt)\\s+(borrow|take|copy|share|ref|deref|ptr)\\b",
+          "captures": {
+            "1": {
+              "name": "keyword.other.runtime.oreslang"
+            },
+            "2": {
+              "name": "support.function.builtin.runtime.oreslang"
+            }
+          }
         }
       ]
     },
@@ -236,15 +293,15 @@
       "patterns": [
         {
           "name": "keyword.control.oreslang",
-          "match": "\\b(?:try|catch|finally|end|fi|if|do|else|elif|elseif|then|new|stop|done|await|for|of|loop|block|break|continue|yield|super|switch|match|matches|when|case|default|select|nb|readch|writech)\\b"
+          "match": "\\b(?:try|catch|finally|end|fi|if|do|else|elif|elseif|then|new|constructor|stop|done|await|spawn|for|of|loop|block|break|continue|yield|super|switch|match|matches|when|case|default|select|nb|readch|writech)\\b"
         },
         {
           "name": "keyword.declaration.oreslang",
-          "match": "\\b(?:define|class|module|namespace|interface|trait|struct|actor|isoactor|def|fnc|routine|type|types|impl)\\b"
+          "match": "\\b(?:define|export|entry|class|module|namespace|interface|trait|struct|actor|isoactor|def|fnc|routine|type|types|impl)\\b"
         },
         {
           "name": "storage.modifier.oreslang",
-          "match": "\\b(?:extends|implements|abstract|static|pub|private|async|generator|nlex|pure|trap|shared|structural|mut|const|val|let)\\b"
+          "match": "\\b(?:extends|implements|abstract|static|pub|private|singleton|untrusted|async|generator|nlex|pure|trap|shared|structural|mut|const|val|let)\\b"
         },
         {
           "name": "keyword.other.runtime.oreslang",
