@@ -29,6 +29,23 @@ test('supports nested block comments like the Oreslang lexer', () => {
   assert.deepEqual(result.tokens.map(t => t.value), ['pub', 'fnc']);
 });
 
+test('keeps is, eq, and neq available as identifiers', () => {
+  const source = 'let is = foo; let eq = bar; let neq = baz; if (is is foo) { return; }';
+  const result = scanOreslang(source);
+
+  assert.deepEqual(result.tokens.map(t => t.value), ['let', 'let', 'let', 'if', 'return']);
+});
+
+test('tracks active actor, channel, callable, and structural keywords', () => {
+  const source = 'pure trap nlex structural actor isoactor nb select readch writech loop block break continue';
+  const result = scanOreslang(source);
+
+  assert.deepEqual(result.tokens.map(t => t.value), [
+    'pure', 'trap', 'nlex', 'structural', 'actor', 'isoactor',
+    'nb', 'select', 'readch', 'writech', 'loop', 'block', 'break', 'continue'
+  ]);
+});
+
 test('reports unmatched delimiters', () => {
   const result = scanOreslang('pub fnc broken() { return;');
   assert.equal(result.diagnostics.length, 1);
@@ -39,7 +56,6 @@ test('reports unterminated strings and block comments', () => {
   assert.match(scanOreslang('"oops').diagnostics[0].message, /Unterminated string/);
   assert.match(scanOreslang('/* nope').diagnostics[0].message, /Unterminated block comment/);
 });
-
 
 test('handles an identifier ending exactly at EOF', () => {
   const result = scanOreslang('pub');
