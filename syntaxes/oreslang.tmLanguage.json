@@ -244,7 +244,7 @@
         },
         {
           "name": "storage.modifier.oreslang",
-          "match": "\\b(?:extends|implements|abstract|static|pub|private|async|nlex|pure|trap|shared|structural|mut|const|val|let)\\b"
+          "match": "\\b(?:extends|implements|abstract|static|pub|private|async|generator|nlex|pure|trap|shared|structural|mut|const|val|let)\\b"
         },
         {
           "name": "keyword.other.runtime.oreslang",
