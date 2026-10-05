@@ -2,15 +2,43 @@
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "name": "Oreslang",
   "scopeName": "source.oreslang",
+  "fileTypes": [
+    "ores"
+  ],
   "patterns": [
-    { "include": "#comments" },
-    { "include": "#strings" },
-    { "include": "#numbers" },
-    { "include": "#annotations" },
-    { "include": "#runtime-globals" },
-    { "include": "#keywords" },
-    { "include": "#function-declarations" },
-    { "include": "#types" }
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#annotations"
+    },
+    {
+      "include": "#declarations"
+    },
+    {
+      "include": "#imports"
+    },
+    {
+      "include": "#runtime-globals"
+    },
+    {
+      "include": "#contextual-operators"
+    },
+    {
+      "include": "#operators"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#types"
+    }
   ],
   "repository": {
     "comments": {
@@ -25,7 +53,9 @@
           "begin": "/\\*",
           "end": "\\*/",
           "patterns": [
-            { "include": "#comments" }
+            {
+              "include": "#comments"
+            }
           ]
         }
       ]
@@ -37,7 +67,10 @@
           "begin": "\"",
           "end": "\"",
           "patterns": [
-            { "name": "constant.character.escape.oreslang", "match": "\\\\." }
+            {
+              "name": "constant.character.escape.oreslang",
+              "match": "\\\\."
+            }
           ]
         },
         {
@@ -45,7 +78,10 @@
           "begin": "'",
           "end": "'",
           "patterns": [
-            { "name": "constant.character.escape.oreslang", "match": "\\\\." }
+            {
+              "name": "constant.character.escape.oreslang",
+              "match": "\\\\."
+            }
           ]
         }
       ]
@@ -61,8 +97,74 @@
     "annotations": {
       "patterns": [
         {
-          "name": "meta.annotation.oreslang",
-          "match": "@[A-Za-z_][A-Za-z0-9_]*"
+          "match": "(@)([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "punctuation.definition.annotation.oreslang"
+            },
+            "2": {
+              "name": "entity.name.tag.annotation.oreslang"
+            }
+          }
+        }
+      ]
+    },
+    "declarations": {
+      "patterns": [
+        {
+          "match": "\\b(define)\\s+(class|module|interface|trait|struct|actor|isoactor)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.oreslang"
+            },
+            "2": {
+              "name": "storage.type.oreslang"
+            },
+            "3": {
+              "name": "entity.name.type.oreslang"
+            }
+          }
+        },
+        {
+          "match": "\\b(fnc|routine)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "storage.type.function.oreslang"
+            },
+            "2": {
+              "name": "entity.name.function.oreslang"
+            }
+          }
+        },
+        {
+          "match": "\\b(type)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "keyword.declaration.type.oreslang"
+            },
+            "2": {
+              "name": "entity.name.type.oreslang"
+            }
+          }
+        }
+      ]
+    },
+    "imports": {
+      "patterns": [
+        {
+          "match": "\\b(import)\\s+(actor|module|class|interface|trait|fnc|routine)\\b",
+          "captures": {
+            "1": {
+              "name": "keyword.control.import.oreslang"
+            },
+            "2": {
+              "name": "storage.type.import.oreslang"
+            }
+          }
+        },
+        {
+          "name": "keyword.control.import.oreslang",
+          "match": "\\b(?:import|from|as)\\b"
         }
       ]
     },
@@ -70,7 +172,63 @@
       "patterns": [
         {
           "name": "support.function.builtin.runtime.oreslang",
-          "match": "\\b(?:recover|defer|throw|raise)\\b"
+          "match": "\\b(?:recover|throw|raise)\\b"
+        },
+        {
+          "name": "keyword.control.defer.oreslang",
+          "match": "\\bdefer\\b"
+        }
+      ]
+    },
+    "contextual-operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.comparison.oreslang",
+          "match": "!eq\\b"
+        },
+        {
+          "match": "(?<=[A-Za-z0-9_\\)\\]\\}\\\"'])\\s+\\b(eq|neq|is)\\b(?=\\s+(?:[A-Za-z_][A-Za-z0-9_]*|[0-9]|[\\(\\[\\{\\\"']))",
+          "captures": {
+            "1": {
+              "name": "keyword.operator.comparison.oreslang"
+            }
+          }
+        },
+        {
+          "name": "keyword.operator.type-test.oreslang",
+          "match": "\\bis\\b(?=\\s+type\\b)"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.assignment.oreslang",
+          "match": "(?<![=!<>])=(?!=|>)"
+        },
+        {
+          "name": "keyword.operator.comparison.oreslang",
+          "match": "==|!=|<=|>=|<|>"
+        },
+        {
+          "name": "keyword.operator.logical.oreslang",
+          "match": "&&|\\|\\||!"
+        },
+        {
+          "name": "keyword.operator.arithmetic.oreslang",
+          "match": "\\+|-|\\*|/|%"
+        },
+        {
+          "name": "keyword.operator.bitwise.oreslang",
+          "match": "\\||&|\\^|~"
+        },
+        {
+          "name": "keyword.operator.arrow.oreslang",
+          "match": "->|=>"
+        },
+        {
+          "name": "keyword.operator.question.oreslang",
+          "match": "\\?"
         }
       ]
     },
@@ -78,22 +236,48 @@
       "patterns": [
         {
           "name": "keyword.control.oreslang",
-          "match": "\\b(?:define|class|module|namespace|import|from|as|is|extends|implements|impl|try|catch|finally|end|fi|if|do|else|elif|elseif|then|new|done|await|async|nlex|lex|actor|isoactor|shared|gpu|def|fnc|routine|for|of|yield|super|switch|case|match|select|type|typeof|interface|abstract|struct|singleton|void|static|pub|private|return|val|const|let|mut|self|true|false|null|obj|arr)\\b"
-        }
-      ]
-    },
-    "function-declarations": {
-      "patterns": [
+          "match": "\\b(?:try|catch|finally|end|fi|if|do|else|elif|elseif|then|new|stop|done|await|for|of|loop|block|break|continue|yield|super|switch|match|matches|when|case|default|select|nb|readch|writech)\\b"
+        },
         {
-          "match": "\\b(?:fnc|routine)\\s+([A-Za-z_][A-Za-z0-9_]*)",
-          "captures": {
-            "1": { "name": "entity.name.function.oreslang" }
-          }
+          "name": "keyword.declaration.oreslang",
+          "match": "\\b(?:define|class|module|namespace|interface|trait|struct|actor|isoactor|def|fnc|routine|type|types|impl)\\b"
+        },
+        {
+          "name": "storage.modifier.oreslang",
+          "match": "\\b(?:extends|implements|abstract|static|pub|private|async|nlex|pure|trap|shared|structural|mut|const|val|let)\\b"
+        },
+        {
+          "name": "keyword.other.runtime.oreslang",
+          "match": "\\b(?:rt|with|init|first)\\b"
+        },
+        {
+          "name": "variable.language.oreslang",
+          "match": "\\bself\\b"
+        },
+        {
+          "name": "constant.language.boolean.oreslang",
+          "match": "\\b(?:true|false)\\b"
+        },
+        {
+          "name": "constant.language.null.oreslang",
+          "match": "\\bnull\\b"
+        },
+        {
+          "name": "storage.type.builtin.oreslang",
+          "match": "\\b(?:void|obj|arr)\\b"
+        },
+        {
+          "name": "keyword.control.return.oreslang",
+          "match": "\\breturn\\b"
         }
       ]
     },
     "types": {
       "patterns": [
+        {
+          "name": "storage.type.builtin.oreslang",
+          "match": "\\b(?:bool|byte|char|float|int|long|short|uint|ulong|ushort)\\b"
+        },
         {
           "name": "entity.name.type.oreslang",
           "match": "\\b[A-Z][A-Za-z0-9_]*\\b"
