@@ -62,3 +62,12 @@ test('handles an identifier ending exactly at EOF', () => {
   assert.deepEqual(result.tokens.map(t => t.value), ['pub']);
   assert.equal(result.diagnostics.length, 0);
 });
+
+test('tracks constructor, spawn, hot-load export, and actor isolation keywords', () => {
+  const source = 'define singleton module Loader as export entry run; constructor() {} spawn Worker(); untrusted actor Sandbox as end';
+  const result = scanOreslang(source);
+
+  for (const word of ['define', 'singleton', 'module', 'as', 'export', 'entry', 'constructor', 'spawn', 'untrusted', 'actor']) {
+    assert.ok(result.tokens.some(t => t.kind === 'keyword' && t.value === word), word);
+  }
+});

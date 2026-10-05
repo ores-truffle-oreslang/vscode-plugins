@@ -38,9 +38,35 @@ test('covers current actor, channel, callable, and structural syntax', () => {
   const all = JSON.stringify(grammar);
 
   for (const word of [
-    'actor', 'isoactor', 'nb', 'select', 'readch', 'writech',
-    'pure', 'trap', 'nlex', 'structural', 'loop', 'block'
+    'actor', 'isoactor', 'untrusted', 'spawn', 'nb', 'select', 'readch', 'writech',
+    'pure', 'trap', 'nlex', 'structural', 'loop', 'block', 'constructor', 'export', 'entry', 'singleton'
   ]) {
     assert.match(all, new RegExp('\\b' + word + '\\b'));
+  }
+});
+
+test('covers all current typed import kinds', () => {
+  const imports = JSON.stringify(grammar.repository.imports.patterns);
+  for (const word of ['actor', 'module', 'class', 'interface', 'trait', 'struct', 'type', 'types', 'fnc']) {
+    assert.match(imports, new RegExp('\\\\b' + word + '\\b|' + word));
+  }
+});
+
+test('scopes namespaces, qualified actors/classes, and hot-load entries', () => {
+  const declarations = JSON.stringify(grammar.repository.declarations.patterns);
+  const imports = JSON.stringify(grammar.repository.imports.patterns);
+
+  assert.match(declarations, /namespace/);
+  assert.match(declarations, /constructor/);
+  assert.match(declarations, /untrusted/);
+  assert.match(declarations, /singleton/);
+  assert.match(imports, /export/);
+  assert.match(imports, /entry/);
+});
+
+test('covers explicit rt ownership and pointer bridge operations', () => {
+  const runtime = JSON.stringify(grammar.repository['runtime-globals'].patterns);
+  for (const word of ['borrow', 'take', 'copy', 'share', 'ref', 'deref', 'ptr']) {
+    assert.match(runtime, new RegExp(word));
   }
 });
