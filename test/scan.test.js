@@ -37,11 +37,11 @@ test('keeps is, eq, and neq available as identifiers', () => {
 });
 
 test('tracks active actor, channel, callable, and structural keywords', () => {
-  const source = 'pure trap nlex structural actor isoactor nb select readch writech loop block break continue';
+  const source = 'generator pure trap nlex structural actor isoactor nb select readch writech loop block break continue';
   const result = scanOreslang(source);
 
   assert.deepEqual(result.tokens.map(t => t.value), [
-    'pure', 'trap', 'nlex', 'structural', 'actor', 'isoactor',
+    'generator', 'pure', 'trap', 'nlex', 'structural', 'actor', 'isoactor',
     'nb', 'select', 'readch', 'writech', 'loop', 'block', 'break', 'continue'
   ]);
 });
