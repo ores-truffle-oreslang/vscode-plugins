@@ -70,3 +70,14 @@ test('covers explicit rt ownership and pointer bridge operations', () => {
     assert.match(runtime, new RegExp(word));
   }
 });
+
+test('recognizes upstream do-match, do-select and new rt proxy/cooperate vocabulary', () => {
+  const controls = grammar.repository.keywords.patterns.find(p => p.name === 'keyword.control.oreslang');
+  const runtime = JSON.stringify(grammar.repository['runtime-globals'].patterns);
+  for (const word of ['do', 'match', 'over', 'while', 'select', 'nb', 'default', 'readch', 'writech']) {
+    assert.match(word, new RegExp(controls.match));
+  }
+  for (const word of ['proxy', 'cooperate', 'unref']) {
+    assert.match(runtime, new RegExp(word));
+  }
+});
