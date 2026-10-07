@@ -54,3 +54,7 @@ Language syntax should track the compiler lexer and grammar in:
 
 - `ores-truffle-oreslang/oreslang-source.java/src/main/java/dev/oreslang/parser/Lexer.java`
 - `ores-truffle-oreslang/oreslang-source.java/docs/grammar.ebnf`
+
+### Compiler compatibility
+
+The editor grammar tracks proposed compiler constructs without changing compiler acceptance. See [docs/compiler-pr-sync.md](docs/compiler-pr-sync.md) for the October 2026 upstream PR matrix and validation gates.
