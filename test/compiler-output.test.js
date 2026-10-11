@@ -60,3 +60,36 @@ test('parses raw Oreslang positioned diagnostics too', () => {
 test('ignores unrelated process output', () => {
   assert.deepEqual(parseCompilerOutputRecords('build cache warm\nall good'), []);
 });
+
+test('rejects malformed and hostile JSON diagnostic coordinates', () => {
+  const diagnostics = [
+    { message: 'NaN', range: { start: { line: 'NaN', column: 1 } } },
+    { message: 'huge', range: { start: { line: 999999999999999, column: 1 } } },
+    { message: 'fraction', range: { start: { line: 1.5, column: 1 } } },
+    { message: 'negative', range: { start: { line: 1, column: -3 } } },
+    { message: 'reversed', range: { start: { line: 3, column: 5 }, end: { line: 2, column: 1 } } },
+    { message: 'empty', range: { start: { line: 3, column: 5 }, end: { line: 3, column: 5 } } },
+    { message: 'valid', range: { start: { line: 2, column: 7 } } }
+  ];
+  const records = parseCompilerOutputRecords(JSON.stringify({ version: 1, diagnostics }));
+  assert.deepEqual(records.map(record => record.message), ['valid']);
+  assert.equal(records[0].line, 2);
+  assert.equal(records[0].endColumn, 8);
+  assert.deepEqual(parseCompilerOutputRecords('file.ores:99999999999999999999999:2: error: corrupted'), []);
+});
+
+test('preserves cross-line ranges and normalizes untrusted severities', () => {
+  const records = parseCompilerOutputRecords(JSON.stringify({
+    version: 1,
+    diagnostics: [{
+      message: 'multiline',
+      path: { bad: true },
+      severity: 'fatal-internal-code',
+      range: { start: { line: 4, column: 50 }, end: { line: 5, column: 2 } }
+    }]
+  }));
+  assert.deepEqual(records, [{
+    path: null, line: 4, column: 50, endLine: 5, endColumn: 2,
+    severity: 'error', message: 'multiline'
+  }]);
+});
