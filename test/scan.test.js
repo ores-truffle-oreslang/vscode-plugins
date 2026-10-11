@@ -71,3 +71,12 @@ test('tracks constructor, spawn, hot-load export, and actor isolation keywords',
     assert.ok(result.tokens.some(t => t.kind === 'keyword' && t.value === word), word);
   }
 });
+
+test('matches the common-source ownership and match delimiter contract', () => {
+  const source = 'const owned: int = 6; match owned over on _ -> { return; } end';
+  const tokens = scanOreslang(source).tokens.map(token => token.value);
+  assert.ok(tokens.includes('over'), 'canonical match over delimiter is highlighted');
+  assert.ok(tokens.includes('match'));
+  assert.ok(!tokens.includes('owned'), 'owned is not a public ownership keyword');
+  assert.equal(scanOreslang(source).diagnostics.length, 0);
+});
