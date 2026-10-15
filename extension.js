@@ -40,6 +40,7 @@ function offsetRange(document, start, end) {
 function severityFor(name) {
   if (name === 'warning') return vscode.DiagnosticSeverity.Warning;
   if (name === 'hint') return vscode.DiagnosticSeverity.Hint;
+  if (name === 'info') return vscode.DiagnosticSeverity.Information;
   return vscode.DiagnosticSeverity.Error;
 }
 
@@ -95,7 +96,7 @@ function parseCompilerOutput(document, output) {
     const lineNumber = item.line - 1;
     const column = item.column - 1;
     const start = new vscode.Position(lineNumber, column);
-    const end = new vscode.Position(Math.max(lineNumber, item.endLine - 1), Math.max(column + 1, item.endColumn - 1));
+    const end = new vscode.Position(item.endLine - 1, item.endColumn - 1);
     const diagnostic = new vscode.Diagnostic(
       new vscode.Range(start, end),
       item.message,
