@@ -1,4 +1,5 @@
 'use strict';
+const compilerCheckGenerations = new Map();
 
 const vscode = require('vscode');
 const childProcess = require('child_process');
@@ -120,6 +121,10 @@ function expandCompilerArgs(document) {
 
 async function runCompilerCheck(document, interactive) {
   if (!isOreslang(document)) return;
+  const key = document.uri.toString();
+  const generation = (compilerCheckGenerations.get(key) || 0) + 1;
+  compilerCheckGenerations.set(key, generation);
+  const version = document.version;
 
   const cfg = vscode.workspace.getConfiguration('oreslang.cli');
   const command = String(cfg.get('command', 'oreslang') || '').trim();
@@ -158,6 +163,11 @@ async function runCompilerCheck(document, interactive) {
       maxBuffer: 4 * 1024 * 1024,
       windowsHide: true
     }, (error, stdout, stderr) => {
+      if (document.isClosed || document.isDirty || document.version !== version ||
+          compilerCheckGenerations.get(key) !== generation) {
+        resolve();
+        return;
+      }
       const output = [stdout, stderr].filter(Boolean).join('\n');
       const diagnostics = parseCompilerOutput(document, output);
 
@@ -200,6 +210,7 @@ function activate(context) {
     vscode.workspace.onDidCloseTextDocument(document => {
       lexicalDiagnostics.delete(document.uri);
       compilerDiagnostics.delete(document.uri);
+      compilerCheckGenerations.delete(document.uri.toString());
     }),
     vscode.window.onDidChangeVisibleTextEditors(editors => {
       for (const editor of editors) refreshDocument(editor.document);
