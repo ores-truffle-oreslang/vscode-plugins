@@ -35,3 +35,13 @@ test('machine diagnostics require an integer protocol version', () => {
     assert.deepEqual(parseCompilerOutputRecords(JSON.stringify({version,diagnostics:[{message:'bad version',line:2}]})),[]);
   }
 });
+
+test('CLI imported-file diagnostics do not masquerade as active-file errors', () => {
+  const cwd = path.resolve(__dirname, 'fixtures');
+  const document = {uri: {fsPath: path.join(cwd, 'current.ores')}};
+  const issue = p => ({path:p, message:'wrong source', severity:'error',
+    range:{start:{line:3,column:2},end:{line:3,column:4}}});
+  assert.equal(context.parseCompilerOutput(document,payload(issue('other.ores')),cwd).length,0);
+  assert.equal(context.parseCompilerOutput(document,payload(issue('current.ores')),cwd).length,1);
+  assert.equal(context.parseCompilerOutput(document,payload(issue(document.uri.fsPath)),cwd).length,1);
+});

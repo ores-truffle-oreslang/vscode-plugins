@@ -6,6 +6,7 @@ const childProcess = require('child_process');
 const path = require('path');
 const { scanOreslang } = require('./lib/scan');
 const { parseCompilerOutputRecords } = require('./lib/compiler-output');
+const { matchesCompilerDiagnosticPath } = require('./lib/diagnostic-path');
 
 let keywordDecoration;
 let runtimeGlobalDecoration;
@@ -92,8 +93,14 @@ function scheduleRefresh(document) {
   }, 100));
 }
 
-function parseCompilerOutput(document, output) {
-  return parseCompilerOutputRecords(output).map(item => {
+function parseCompilerOutput(document, output, cwd) {
+  // Null document is a deliberate parser-only mode used by diagnostics tests.
+  // The editor always supplies the active file, which enforces path ownership.
+  const activePath = document?.uri?.fsPath;
+  const base = cwd || (activePath ? path.dirname(activePath) : '.');
+  return parseCompilerOutputRecords(output)
+    .filter(item => !document || matchesCompilerDiagnosticPath(item.path, activePath, base))
+    .map(item => {
     const lineNumber = item.line - 1;
     const column = item.column - 1;
     const start = new vscode.Position(lineNumber, column);
@@ -169,12 +176,16 @@ async function runCompilerCheck(document, interactive) {
         return;
       }
       const output = [stdout, stderr].filter(Boolean).join('\n');
-      const diagnostics = parseCompilerOutput(document, output);
+      const diagnostics = parseCompilerOutput(document, output, cwd);
 
       if (error && diagnostics.length === 0) {
+        const outsideFile = parseCompilerOutputRecords(output).some(item =>
+          item.path && !matchesCompilerDiagnosticPath(item.path, document.uri.fsPath, cwd));
         const diagnostic = new vscode.Diagnostic(
           new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 1)),
-          output.trim() || error.message,
+          outsideFile
+            ? 'Oreslang check reported errors in a different source file; inspect the CLI output for its path.'
+            : (output.trim() || error.message),
           vscode.DiagnosticSeverity.Error
         );
         diagnostic.source = 'oreslang';
