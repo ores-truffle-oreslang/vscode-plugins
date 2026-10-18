@@ -97,7 +97,7 @@ function parseCompilerOutput(document, output, cwd) {
   // Null document is a deliberate parser-only mode used by diagnostics tests.
   // The editor always supplies the active file, which enforces path ownership.
   const activePath = document?.uri?.fsPath;
-  const base = cwd || (activePath ? path.dirname(activePath) : process.cwd());
+  const base = cwd || (activePath ? path.dirname(activePath) : '.');
   return parseCompilerOutputRecords(output)
     .filter(item => !document || matchesCompilerDiagnosticPath(item.path, activePath, base))
     .map(item => {
