@@ -93,9 +93,13 @@ function scheduleRefresh(document) {
   }, 100));
 }
 
-function parseCompilerOutput(document, output, cwd = path.dirname(document.uri.fsPath)) {
+function parseCompilerOutput(document, output, cwd) {
+  // Null document is a deliberate parser-only mode used by diagnostics tests.
+  // The editor always supplies the active file, which enforces path ownership.
+  const activePath = document?.uri?.fsPath;
+  const base = cwd || (activePath ? path.dirname(activePath) : process.cwd());
   return parseCompilerOutputRecords(output)
-    .filter(item => matchesCompilerDiagnosticPath(item.path, document.uri.fsPath, cwd))
+    .filter(item => !document || matchesCompilerDiagnosticPath(item.path, activePath, base))
     .map(item => {
     const lineNumber = item.line - 1;
     const column = item.column - 1;
