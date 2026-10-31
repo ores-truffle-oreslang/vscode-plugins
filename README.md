@@ -47,9 +47,10 @@ Use **Oreslang: Check Current File** to run an explicit compiler check.
 
 ## Development
 
-No build step is required.
+No build step is required, but the TextMate/Oniguruma engine tests require dev dependencies.
 
 ```bash
+npm install --ignore-scripts
 npm test
 ```
 
@@ -89,3 +90,7 @@ could not verify private Git blobs via anonymous fetches. Compiler-side
 lexer/parser tests are proposed in private oreslang-source.java PR #2350,
 but currently have zero executed CI steps. Public editor CI is not a proof
 of compiler acceptance, guest execution, or actual TextMate rendering.
+
+## TextMate engine tests
+
+The new textmate-engine test uses the real `vscode-textmate` interpreter and `vscode-oniguruma` WASM to assert token scope boundaries across nested comments, quoted strings, Symbols, compound forms and runtime globals. This does not yet run a VS Code Extension Host, custom color decoration rendering or a compiler.
