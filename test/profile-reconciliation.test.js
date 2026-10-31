@@ -18,7 +18,7 @@ const gitBlob = file => {
 test('compiler-current and language-target are different, exact-pinned source profiles',()=>{
   assert.equal(bridge.schema,'oreslang.editor-syntax-profile-reconciliation/v1');
   assert.equal(bridge.resolution.mergeGate,'BLOCKED_COMPILER_PARITY');
-  assert.equal(bridge.resolution.activeStackedEditorProfile,'language-target');
+  assert.equal(bridge.resolution.activeStackedEditorProfile,'compiler-current');
   assert.equal(bridge.resolution.explicitlyNotEquivalent,true);
   assert.equal(gitBlob(contractPath),bridge.profiles['compiler-current'].gitBlobSha);
   assert.equal(gitBlob(proposalPath),bridge.profiles['language-target'].gitBlobSha);

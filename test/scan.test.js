@@ -29,11 +29,11 @@ test('supports nested block comments like the Oreslang lexer', () => {
   assert.deepEqual(result.tokens.map(t => t.value), ['pub', 'fnc']);
 });
 
-test('keeps is, eq, and neq available as identifiers', () => {
+test('lexer-reserved is, eq and neq are classified as operators', () => {
   const source = 'let is = foo; let eq = bar; let neq = baz; if (is is foo) { return; }';
   const result = scanOreslang(source);
 
-  assert.deepEqual(result.tokens.map(t => t.value), ['let', 'let', 'let', 'if', 'return']);
+  assert.deepEqual(result.tokens.map(t => t.value), ['let','is','let','eq','let','neq','if','is','is','return']);
 });
 
 test('tracks active actor, channel, callable, and structural keywords', () => {
@@ -86,7 +86,7 @@ test('raw template literals do not create false keyword or delimiter errors', ()
   assert.deepEqual(result.tokens.map(t => t.value), ['const', 'return']);
   assert.equal(result.diagnostics.length, 0);
 });
-test('deprecated null and isoactor are not reserved words', () => {
+test('pinned lexer still reserves null and isoactor (parser acceptance separate)', () => {
   const values = scanOreslang('null isoactor isolated critical suspends gen').tokens.map(t => t.value);
-  assert.deepEqual(values, ['isolated', 'critical', 'suspends', 'gen']);
+  assert.deepEqual(values, ['null','isoactor','isolated', 'critical', 'suspends', 'gen']);
 });

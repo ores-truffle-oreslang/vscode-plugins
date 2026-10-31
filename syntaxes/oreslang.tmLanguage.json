@@ -257,12 +257,8 @@
           "match": "!eq\\b"
         },
         {
-          "match": "(?<=[A-Za-z0-9_\\)\\]\\}\\\"'])\\s+\\b(eq|neq|is)\\b(?=\\s+(?:[A-Za-z_][A-Za-z0-9_]*|[0-9]|[\\(\\[\\{\\\"']))",
-          "captures": {
-            "1": {
-              "name": "keyword.operator.comparison.oreslang"
-            }
-          }
+          "name": "keyword.operator.comparison.oreslang",
+          "match": "\\b(?:eq|neq|is)\\b"
         },
         {
           "name": "keyword.operator.type-test.oreslang",
@@ -286,11 +282,11 @@
         },
         {
           "name": "keyword.operator.arithmetic.oreslang",
-          "match": "\\+|-|\\*|/"
+          "match": "\\+|-|\\*|/|%"
         },
         {
           "name": "keyword.operator.bitwise.oreslang",
-          "match": "\\||&|~"
+          "match": "\\||&|\\^|~"
         },
         {
           "name": "keyword.operator.arrow.oreslang",
@@ -310,7 +306,7 @@
         },
         {
           "name": "keyword.declaration.oreslang",
-          "match": "\\b(?:define|export|entry|class|module|namespace|interface|trait|struct|actor|isolated|def|fnc|routine|type|types|impl)\\b"
+          "match": "\\b(?:define|export|entry|class|module|namespace|interface|trait|struct|actor|isoactor|isolated|def|fnc|routine|type|types|impl)\\b"
         },
         {
           "name": "storage.modifier.oreslang",
@@ -335,6 +331,10 @@
         {
           "name": "keyword.control.return.oreslang",
           "match": "\\breturn\\b"
+        },
+        {
+          "name": "keyword.other.lexer-reserved.oreslang",
+          "match": "\\b(?:null|panic|cpu|gpu|conforms|contract|quantum|cb)\\b"
         }
       ]
     },

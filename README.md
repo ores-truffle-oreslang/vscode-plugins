@@ -47,10 +47,9 @@ Use **Oreslang: Check Current File** to run an explicit compiler check.
 
 ## Development
 
-No build step is required, but the TextMate/Oniguruma engine tests require dev dependencies.
+No build step is required.
 
 ```bash
-npm install --ignore-scripts
 npm test
 ```
 
@@ -94,3 +93,7 @@ of compiler acceptance, guest execution, or actual TextMate rendering.
 ## TextMate engine tests
 
 The new textmate-engine test uses the real `vscode-textmate` interpreter and `vscode-oniguruma` WASM to assert token scope boundaries across nested comments, quoted strings, Symbols, compound forms and runtime globals. This does not yet run a VS Code Extension Host, custom color decoration rendering or a compiler.
+
+## Explicit syntax profiles (compiler-current default)
+
+The registered `.ores` editor grammar and `lib/scan.js` preserve the pinned Java lexer `compiler-current` behavior. `lib/scan-target-preview.js` and `syntaxes/oreslang-target-preview.tmLanguage.json` are **unregistered test-only artifacts** for the 50-case proposed target syntax. Do not activate or publish the target preview as compiler parity; `contracts/editor-syntax/v1/profile-reconciliation.json` requires native compiler proof and independent review. The editor's main TextMate tests exercise the proposed preview explicitly; the baseline compiler tests exercise the installed grammar.

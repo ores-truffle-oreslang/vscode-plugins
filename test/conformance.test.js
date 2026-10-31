@@ -3,12 +3,12 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const {scanOreslang} = require('../lib/scan');
+const {scanOreslang} = require('../lib/scan-target-preview');
 
 const corpus = JSON.parse(fs.readFileSync(
   path.join(__dirname, '..', 'conformance', 'oreslang-syntax-v1.json'), 'utf8'));
 const grammar = JSON.parse(fs.readFileSync(
-  path.join(__dirname, '..', 'syntaxes', 'oreslang.tmLanguage.json'), 'utf8'));
+  path.join(__dirname, '..', 'syntaxes', 'oreslang-target-preview.tmLanguage.json'), 'utf8'));
 
 test('pin the upstream source and separate the editor-target contract', () => {
   assert.equal(corpus.schema, 'oreslang.editor-syntax-conformance/v1');

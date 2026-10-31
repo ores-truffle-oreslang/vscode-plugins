@@ -82,12 +82,14 @@ test('recognizes upstream do-match, do-select and new rt proxy/cooperate vocabul
   }
 });
 
-test('grammar excludes removed language forms and recognizes isolated actors', () => {
+test('grammar preserves pinned lexical tokens while recognizing proposed isolated actors', () => {
   const modifiers = grammar.repository.declarations.patterns[0].match;
   assert.match('define pub isolated actor Worker', new RegExp(modifiers));
   const arithmetic = grammar.repository.operators.patterns.find(p => p.name === 'keyword.operator.arithmetic.oreslang');
   const bitwise = grammar.repository.operators.patterns.find(p => p.name === 'keyword.operator.bitwise.oreslang');
-  assert.doesNotMatch('%', new RegExp(arithmetic.match));
-  assert.doesNotMatch('^', new RegExp(bitwise.match));
-  assert.doesNotMatch(JSON.stringify(grammar.repository.keywords), /constant.language.null|isoactor/);
+  assert.match('%',new RegExp(arithmetic.match));
+  assert.match('^',new RegExp(bitwise.match));
+  const all=JSON.stringify(grammar.repository.keywords);
+  assert.match(all,/isoactor/);
+  assert.match(all,/null/);
 });

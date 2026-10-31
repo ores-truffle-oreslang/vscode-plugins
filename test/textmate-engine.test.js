@@ -6,7 +6,7 @@ const path = require('node:path');
 const vsctm = require('vscode-textmate');
 const onig = require('vscode-oniguruma');
 
-const raw = fs.readFileSync(path.join(__dirname, '..', 'syntaxes', 'oreslang.tmLanguage.json'), 'utf8');
+const raw = fs.readFileSync(path.join(__dirname, '..', 'syntaxes', 'oreslang-target-preview.tmLanguage.json'), 'utf8');
 const wasm = fs.readFileSync(require.resolve('vscode-oniguruma/release/onig.wasm'));
 let grammarPromise;
 async function grammar() {
