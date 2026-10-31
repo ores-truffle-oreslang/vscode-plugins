@@ -16,6 +16,12 @@
       "include": "#numbers"
     },
     {
+      "include": "#symbols"
+    },
+    {
+      "include": "#compound-keywords"
+    },
+    {
       "include": "#annotations"
     },
     {
@@ -217,12 +223,8 @@
     "runtime-globals": {
       "patterns": [
         {
-          "name": "support.function.builtin.runtime.oreslang",
-          "match": "\\b(?:recover|throw|raise)\\b"
-        },
-        {
-          "name": "keyword.control.defer.oreslang",
-          "match": "\\bdefer\\b"
+          "name": "support.function.global.oreslang",
+          "match": "\\b(?:recover|defer|throw|raise)\\b"
         },
         {
           "match": "\\b(rt)\\s+(borrow|take|copy|share|mut\\s+borrow|proxy|cooperate)\\b",
@@ -334,6 +336,22 @@
         {
           "name": "entity.name.type.oreslang",
           "match": "\\b[A-Z][A-Za-z0-9_]*\\b"
+        }
+      ]
+    },
+    "symbols": {
+      "patterns": [
+        {
+          "name": "constant.other.symbol.oreslang",
+          "match": "#(?:[A-Za-z_][A-Za-z0-9_]*|\"(?:\\\\.|[^\"\\\\\\r\\n])*\"|'(?:\\\\.|[^'\\\\\\r\\n])*')"
+        }
+      ]
+    },
+    "compound-keywords": {
+      "patterns": [
+        {
+          "name": "keyword.oreslang",
+          "match": "\\b(?:critical-read|critical-write|nb-select|transform-pipe)\\b"
         }
       ]
     }
