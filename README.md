@@ -65,3 +65,22 @@ Language syntax should track the compiler lexer and grammar in:
 ### Compiler compatibility
 
 The editor grammar tracks proposed compiler constructs without changing compiler acceptance. See [docs/compiler-pr-sync.md](docs/compiler-pr-sync.md) for the October 2026 upstream PR matrix and validation gates.
+
+## Shared lexer fixture contract
+
+`conformance/oreslang-syntax-v1.json` is copied byte-for-byte into VS Code,
+Sublime Text, and the HTML highlighter. `test/conformance.test.js` verifies
+positive and negative editor-token cases. These are **source-free host checks**,
+not proof that the compiler accepts the examples or that VS Code's actual
+TextMate renderer colors them identically.
+
+The manifest pins the authoritative Java lexer and EBNF blob identities. The
+pinned compiler `main` still recognizes `isoactor`, `null`, `%` and `^`,
+whereas the proposed editor-target contract intentionally excludes them.
+That is an explicit compiler/editor parity discrepancy, **not** a validated
+compiler migration. Review before merging semantics changes.
+
+The weekly `grammar-drift` workflow fetches only those two public compiler
+source files and reports a changed Git blob hash. It does not synchronize or
+execute upstream source automatically. `node scripts/check-upstream-syntax.mjs`
+validates the local manifest offline.
