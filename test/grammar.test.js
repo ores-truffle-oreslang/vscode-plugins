@@ -77,7 +77,7 @@ test('recognizes upstream do-match, do-select and new rt proxy/cooperate vocabul
   for (const word of ['do', 'match', 'over', 'while', 'select', 'nb', 'default', 'readch', 'writech']) {
     assert.match(word, new RegExp(controls.match));
   }
-  for (const word of ['proxy', 'cooperate', 'unref']) {
+  for (const word of ['proxy', 'cooperate', 'mut']) {
     assert.match(runtime, new RegExp(word));
   }
 });
