@@ -1,5 +1,11 @@
 'use strict';
 const compilerCheckGenerations = new Map();
+const compilerProcesses = new Map();
+
+function cancelCompilerProcess(key) {
+  const current = compilerProcesses.get(key);
+  if (current) current.cancel();
+}
 
 const vscode = require('vscode');
 const childProcess = require('child_process');
@@ -98,6 +104,7 @@ function refreshDocument(document) {
 function scheduleRefresh(document) {
   if (!isOreslang(document)) return;
   const key = document.uri.toString();
+  cancelCompilerProcess(key);
   const oldTimer = debounceTimers.get(key);
   if (oldTimer) clearTimeout(oldTimer);
   debounceTimers.set(key, setTimeout(() => {
@@ -149,6 +156,9 @@ async function runCompilerCheck(document, interactive) {
   const key = document.uri.toString();
   const generation = (compilerCheckGenerations.get(key) || 0) + 1;
   compilerCheckGenerations.set(key, generation);
+  // Superseding a run must release its child and pending Promise, not merely
+  // suppress stale diagnostics after a timeout.
+  cancelCompilerProcess(key);
   const version = document.version;
 
   // A workspace can supply settings and source files; never launch its CLI
@@ -201,15 +211,40 @@ async function runCompilerCheck(document, interactive) {
     ? Math.max(100, Math.min(60000, suppliedTimeout)) : 10000;
 
   await new Promise(resolve => {
-    childProcess.execFile(command, args, {
+    let child;
+    let settled = false;
+    const active = {
+      cancel() {
+        if (settled) return;
+        settled = true;
+        if (compilerProcesses.get(key) === active) compilerProcesses.delete(key);
+        try { child?.kill(); } catch { /* A child may have already exited. */ }
+        resolve();
+      }
+    };
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      if (compilerProcesses.get(key) === active) compilerProcesses.delete(key);
+      resolve();
+    };
+    compilerProcesses.set(key, active);
+    try {
+      child = childProcess.execFile(command, args, {
       cwd,
       timeout,
       maxBuffer: 4 * 1024 * 1024,
       windowsHide: true
     }, (error, stdout, stderr) => {
+      if (settled) return;
+      if (vscode.workspace.isTrusted !== true) {
+        compilerDiagnostics.delete(document.uri);
+        finish();
+        return;
+      }
       if (document.isClosed || document.isDirty || document.version !== version ||
           compilerCheckGenerations.get(key) !== generation) {
-        resolve();
+        finish();
         return;
       }
       const output = [stdout, stderr].filter(Boolean).join('\n');
@@ -233,8 +268,16 @@ async function runCompilerCheck(document, interactive) {
       if (interactive && !error && diagnostics.length === 0) {
         vscode.window.showInformationMessage('oreslang check passed.');
       }
-      resolve();
+      finish();
     });
+      // A mock or platform execFile implementation can invoke its callback
+      // synchronously. Never install an already-finished child as active.
+      if (settled && child && typeof child.kill === 'function' &&
+          compilerCheckGenerations.get(key) !== generation) child.kill();
+    } catch (error) {
+      finish();
+      if (interactive) vscode.window.showWarningMessage('Could not start the Oreslang CLI: ' + error.message);
+    }
   });
 }
 
@@ -259,6 +302,7 @@ function activate(context) {
       const key = document.uri.toString();
       clearTimeout(debounceTimers.get(key));
       debounceTimers.delete(key);
+      cancelCompilerProcess(key);
       lexicalDiagnostics.delete(document.uri);
       compilerDiagnostics.delete(document.uri);
       compilerCheckGenerations.delete(document.uri.toString());
@@ -267,6 +311,9 @@ function activate(context) {
       for (const editor of editors) refreshDocument(editor.document);
     }),
     vscode.workspace.onDidChangeConfiguration(event => {
+      if (event.affectsConfiguration('oreslang.cli')) {
+        for (const key of [...compilerProcesses.keys()]) cancelCompilerProcess(key);
+      }
       if (event.affectsConfiguration('oreslang.colors')) rebuildDecorations();
       if (event.affectsConfiguration('oreslang')) {
         for (const editor of vscode.window.visibleTextEditors) refreshDocument(editor.document);
@@ -288,6 +335,8 @@ function activate(context) {
 }
 
 function deactivate() {
+  for (const key of [...compilerProcesses.keys()]) cancelCompilerProcess(key);
+  compilerCheckGenerations.clear();
   for (const timer of debounceTimers.values()) clearTimeout(timer);
   debounceTimers.clear();
 }
