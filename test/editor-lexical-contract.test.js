@@ -35,3 +35,13 @@ for(const fixture of contract.fixtures) {
     }
   });
 }
+
+test('every reserved word from the pinned Java lexer is recognized by the scanner',()=>{
+  for(const word of contract.reservedWords) {
+    const expected=contract.runtimeControlWords.includes(word)?'runtimeGlobal':
+      contract.comparisonOperatorWords.includes(word)?'operator':'keyword';
+    const actual=scanOreslang(word).tokens;
+    assert.ok(actual.some(t=>t.value===word && t.kind===expected),
+      'missing reserved '+expected+': '+word);
+  }
+});
