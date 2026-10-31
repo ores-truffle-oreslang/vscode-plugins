@@ -1,34 +1,13 @@
-import {createHash} from 'node:crypto';
+// Offline public editor validation only; do not fetch private compiler source.
 import {readFileSync} from 'node:fs';
-
 const corpus = JSON.parse(readFileSync(new URL('../conformance/oreslang-syntax-v1.json', import.meta.url)));
+const allowed = new Set(['docs/grammar.ebnf','src/main/java/dev/oreslang/parser/Lexer.java']);
 if (corpus.schema !== 'oreslang.editor-syntax-conformance/v1' ||
     corpus.authority.repo !== 'ores-truffle-oreslang/oreslang-source.java' ||
-    !Array.isArray(corpus.authority.files) || corpus.authority.files.length !== 2) {
-  throw new Error('untrusted/invalid conformance authority');
+    !Array.isArray(corpus.authority.files) || corpus.authority.files.length !== 2 ||
+    corpus.authority.files.some(x=>!allowed.has(x.path)||!/^[a-f0-9]{40}$/.test(x.gitBlobSha)) ||
+    !Array.isArray(corpus.cases) || corpus.cases.length !== 50 ||
+    new Set(corpus.cases.map(x=>x.id)).size !== 50) {
+  throw new Error('invalid editor syntax conformance manifest');
 }
-const allowed = new Set(['docs/grammar.ebnf', 'src/main/java/dev/oreslang/parser/Lexer.java']);
-for (const file of corpus.authority.files) {
-  if (!allowed.has(file.path) || !/^[a-f0-9]{40}$/.test(file.gitBlobSha)) {
-    throw new Error('invalid pinned compiler source: ' + file.path);
-  }
-}
-if (process.argv.includes('--live')) {
-  for (const file of corpus.authority.files) {
-    const url = 'https://raw.githubusercontent.com/' + corpus.authority.repo +
-      '/main/' + file.path;
-    const response = await fetch(url, {signal: AbortSignal.timeout(15000)});
-    if (!response.ok) throw new Error('unable to fetch compiler grammar: ' + response.status);
-    const buffer = Buffer.from(await response.arrayBuffer());
-    if (buffer.length > 1024 * 1024) throw new Error('upstream grammar source exceeds budget');
-    const gitBlobSha = createHash('sha1')
-      .update(Buffer.from('blob ' + buffer.length + '\0')).update(buffer).digest('hex');
-    console.log(file.path + ': pinned=' + file.gitBlobSha + ' current=' + gitBlobSha);
-    if (gitBlobSha !== file.gitBlobSha) {
-      console.error('Compiler grammar drift detected; review semantics and update all three copied manifests together.');
-      process.exitCode = 1;
-    }
-  }
-} else {
-  console.log('Pinned compiler syntax manifest validated (offline, not a live drift check).');
-}
+console.log('Offline fixture validated; private compiler source was not fetched.');

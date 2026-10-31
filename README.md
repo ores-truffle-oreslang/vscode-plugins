@@ -80,7 +80,12 @@ whereas the proposed editor-target contract intentionally excludes them.
 That is an explicit compiler/editor parity discrepancy, **not** a validated
 compiler migration. Review before merging semantics changes.
 
-The weekly `grammar-drift` workflow fetches only those two public compiler
-source files and reports a changed Git blob hash. It does not synchronize or
-execute upstream source automatically. `node scripts/check-upstream-syntax.mjs`
-validates the local manifest offline.
+The shared suite now includes **50 adversarial fixtures**. The tests run
+through regular editor PR CI and validate only the editor-target contract.
+
+**Privacy boundary:** The compiler source repository is private. Public
+workflows must not clone or mirror its source. The removed scheduled watcher
+could not verify private Git blobs via anonymous fetches. Compiler-side
+lexer/parser tests are proposed in private oreslang-source.java PR #2350,
+but currently have zero executed CI steps. Public editor CI is not a proof
+of compiler acceptance, guest execution, or actual TextMate rendering.

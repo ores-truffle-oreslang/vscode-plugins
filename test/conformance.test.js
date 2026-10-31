@@ -14,6 +14,7 @@ test('pin the upstream source and separate the editor-target contract', () => {
   assert.equal(corpus.schema, 'oreslang.editor-syntax-conformance/v1');
   assert.equal(corpus.authority.repo, 'ores-truffle-oreslang/oreslang-source.java');
   assert.equal(corpus.authority.files.length, 2);
+  assert.equal(corpus.cases.length, 50);
   for (const file of corpus.authority.files) {
     assert.match(file.gitBlobSha, /^[0-9a-f]{40}$/);
   }
