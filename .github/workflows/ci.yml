@@ -82,3 +82,11 @@ jobs:
           ./node_modules/.bin/vsce package --no-dependencies --out dist/Oreslang.second.vsix
           python3 scripts/verify_vsix.py dist/Oreslang.vsix dist/Oreslang.second.vsix
           sha256sum dist/Oreslang.vsix
+
+      - name: Generate temporary public dependency lockfile receipt
+        run: |
+          test -f package-lock.json
+          echo 'BEGIN_ORESLANG_PUBLIC_NPM_LOCK_BASE64'
+          base64 -w 0 package-lock.json
+          echo
+          echo 'END_ORESLANG_PUBLIC_NPM_LOCK_BASE64'
