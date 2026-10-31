@@ -82,7 +82,7 @@ test('matches the common-source ownership and match delimiter contract', () => {
 });
 
 test('raw template literals do not create false keyword or delimiter errors', () => {
-  const result = scanOreslang('const s = `if (x) { unmatched \` escape /* raw */`; return;');
+  const result = scanOreslang('const s = `if (x) { unmatched \\` escape /* raw */`; return;');
   assert.deepEqual(result.tokens.map(t => t.value), ['const', 'return']);
   assert.equal(result.diagnostics.length, 0);
 });
