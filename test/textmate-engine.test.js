@@ -76,3 +76,18 @@ test('real Oniguruma distinguishes contextual eq from declaration names', async 
   assert.ok(!has(scopesAt(a, 'eq'), 'keyword.operator.comparison.oreslang'));
   assert.ok(has(scopesAt(a, 'eq', 1), 'keyword.operator.comparison.oreslang'));
 });
+
+test('real TextMate keeps multiline raw template bodies opaque', async () => {
+  const tick=String.fromCharCode(96);
+  const lines=await tokenize('const t = ' + tick + 'if\nrecover' + tick + '; return;');
+  assert.ok(has(scopesAt(lines[0], 'if'), 'string.quoted.template.oreslang'));
+  assert.ok(!has(scopesAt(lines[0], 'if'), 'keyword.control.oreslang'));
+  assert.ok(has(scopesAt(lines[1], 'recover'), 'string.quoted.template.oreslang'));
+  assert.ok(!has(scopesAt(lines[1], 'recover'), 'support.function.global.oreslang'));
+  assert.ok(has(scopesAt(lines[1], 'return'), 'keyword.control.return.oreslang'));
+});
+test('real TextMate does not leak from unterminated comments and strings', async () => {
+  const lines=await tokenize('/* outer /* inner */ recover\nreturn;');
+  assert.ok(has(scopesAt(lines[0], 'recover'), 'comment.block.oreslang'));
+  assert.ok(has(scopesAt(lines[1], 'return'), 'comment.block.oreslang'));
+});

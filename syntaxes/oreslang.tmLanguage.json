@@ -89,6 +89,17 @@
               "match": "\\\\."
             }
           ]
+        },
+        {
+          "name": "string.quoted.template.oreslang",
+          "begin": "`",
+          "end": "`",
+          "patterns": [
+            {
+              "name": "constant.character.escape.oreslang",
+              "match": "\\\\."
+            }
+          ]
         }
       ]
     },
