@@ -60,3 +60,25 @@ jobs:
         env:
           ORESLANG_TEST_MODE: untrusted
         run: xvfb-run -a npm run test:extension-host
+
+  release-vsix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22.20.0"
+      - name: Install pinned VSIX packaging tool and editor test dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Build and validate two byte-identical VSIX release packages
+        run: |
+          mkdir -p dist
+          npm run pack:vsix
+          ./node_modules/.bin/vsce package --no-dependencies --out dist/Oreslang.second.vsix
+          python3 scripts/verify_vsix.py dist/Oreslang.vsix dist/Oreslang.second.vsix
+          sha256sum dist/Oreslang.vsix
