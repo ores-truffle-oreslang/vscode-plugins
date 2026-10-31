@@ -20,5 +20,13 @@ jobs:
           node-version: "22.20.0"
       - name: Install pinned TextMate/Oniguruma test dependencies
         run: npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+      - name: Generate reproducible dependency lock for review
+        run: |
+          set -euo pipefail
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+          echo ORES_LOCK_START
+          base64 -w0 package-lock.json
+          echo
+          echo ORES_LOCK_END
       - name: Run scanner and actual TextMate engine tests
         run: npm test
