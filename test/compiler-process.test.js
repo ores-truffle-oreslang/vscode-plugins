@@ -4,9 +4,9 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const os=require('node:os');
 const path=require('node:path');
-const {execFile}=require('node:child_process');
+const childProcess=require('node:child_process');
 const {setTimeout: sleep}=require('node:timers/promises');
-const {execFileOptions,terminateProcessTree}=require('../lib/compiler-process');
+const {execFileOptions,terminateProcessTree,launchCompiler}=require('../lib/compiler-process');
 
 test('compiler launch uses no shell and isolates POSIX child process group',()=>{
   const options=execFileOptions('/tmp',5000,1048576);
@@ -31,8 +31,8 @@ test('cancelling the CLI prevents grandchild continuation on POSIX',async(t)=>{
       "process.stdout.write('READY\\n');",
       "setInterval(()=>{},1000);"
     ].join('');
-    child=execFile(process.execPath,['-e',worker,marker],
-      execFileOptions(dir,4000,1024*1024),()=>{});
+    child=launchCompiler(childProcess,process.execPath,['-e',worker,marker],
+      {cwd:dir,timeout:4000,maxBuffer:1024*1024},()=>{});
     await Promise.race([
       new Promise((resolve,reject)=>{
         child.stdout.on('data',buf=>{if(buf.toString().includes('READY'))resolve();});

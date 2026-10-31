@@ -11,7 +11,8 @@ const vscode = require('vscode');
 const childProcess = require('child_process');
 const path = require('path');
 const { scanOreslang } = require('./lib/scan');
-const { execFileOptions, terminateProcessTree } = require('./lib/compiler-process');
+const { launchCompiler, terminateProcessTree } = require('./lib/compiler-process');
+const { setTimeout: cliSetTimeout, clearTimeout: cliClearTimeout } = require('node:timers');
 const { parseCompilerOutputRecords } = require('./lib/compiler-output');
 const { matchesCompilerDiagnosticPath } = require('./lib/diagnostic-path');
 
@@ -223,7 +224,7 @@ async function runCompilerCheck(document, interactive) {
         if (settled) return;
         settled = true;
         if (compilerProcesses.get(key) === active) compilerProcesses.delete(key);
-        clearTimeout(watchdog);
+        cliClearTimeout(watchdog);
         terminateProcessTree(child);
         resolve();
       }
@@ -232,13 +233,13 @@ async function runCompilerCheck(document, interactive) {
       if (settled) return;
       settled = true;
       if (compilerProcesses.get(key) === active) compilerProcesses.delete(key);
-      clearTimeout(watchdog);
+      cliClearTimeout(watchdog);
       resolve();
     };
     compilerProcesses.set(key, active);
     try {
-      child = childProcess.execFile(command, args,
-        execFileOptions(cwd, timeout, 4 * 1024 * 1024), (error, stdout, stderr) => {
+      child = launchCompiler(childProcess, command, args,
+        {cwd, timeout, maxBuffer: 4 * 1024 * 1024}, (error, stdout, stderr) => {
       if (settled) return;
       if (vscode.workspace.isTrusted !== true) {
         compilerDiagnostics.delete(document.uri);
@@ -276,7 +277,7 @@ async function runCompilerCheck(document, interactive) {
       // execFile's timeout kills the leader only; a watchdog also kills
       // descendants that may have inherited its output pipe.
       if (!settled) {
-        watchdog = setTimeout(() => active.cancel(), timeout + 100);
+        watchdog = cliSetTimeout(() => active.cancel(), timeout + 100);
         watchdog.unref?.();
       }
     } catch (error) {
