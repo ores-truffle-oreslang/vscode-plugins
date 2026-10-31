@@ -8,8 +8,8 @@ import zipfile
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 FILES = {
     "extension/package.json",
-    "extension/README.md",
-    "extension/LICENSE",
+    "extension/readme.md",
+    "extension/LICENSE.txt",
     "extension/extension.js",
     "extension/language-configuration.json",
     "extension/lib/scan.js",
