@@ -24,3 +24,20 @@ jobs:
       - name: Validate compiler source pins offline
         run: node scripts/check-upstream-syntax.mjs
 
+
+  vscode-extension-host:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22.20.0"
+      - name: Install pinned extension test runner
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Run actual VS Code Extension Host with Xvfb
+        run: xvfb-run -a npm run test:extension-host

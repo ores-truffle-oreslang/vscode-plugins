@@ -18,7 +18,8 @@
   ],
   "main": "./extension.js",
   "scripts": {
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "test:extension-host": "node test/extension-host/run.cjs"
   },
   "contributes": {
     "languages": [
@@ -103,6 +104,7 @@
   },
   "devDependencies": {
     "vscode-oniguruma": "2.0.1",
-    "vscode-textmate": "9.3.2"
+    "vscode-textmate": "9.3.2",
+    "@vscode/test-electron": "3.1.0"
   }
 }
