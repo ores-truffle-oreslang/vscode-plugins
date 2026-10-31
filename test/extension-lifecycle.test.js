@@ -59,7 +59,7 @@ function fixture() {
       return proc;
     }
   };
-  const sandbox=vm.createContext({module:{exports:{}},require:id=>id==='vscode'?vscode:id==='child_process'?child:realRequire(id)});
+  const sandbox=vm.createContext({clearTimeout, setTimeout, module:{exports:{}},require:id=>id==='vscode'?vscode:id==='child_process'?child:realRequire(id)});
   vm.runInContext(fs.readFileSync(file,'utf8'),sandbox,{filename:file});
   const exports=sandbox.module.exports;
   const subscriptions=[];
