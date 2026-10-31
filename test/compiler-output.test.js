@@ -96,7 +96,7 @@ test('preserves cross-line ranges and normalizes untrusted severities', () => {
 
 test('plain diagnostics retain imported-file paths and Windows drive letters', () => {
   const records = parseCompilerOutputRecords(
-    'src/imported.ores:2:4: warning: imported issue\\n' +
+    'src/imported.ores:2:4: warning: imported issue' + String.fromCharCode(10) +
     'C:\\\\app\\\\main.ores:3:8: error[EX01]: invalid type'
   );
   assert.equal(records.length, 2);
