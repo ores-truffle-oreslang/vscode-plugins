@@ -112,7 +112,7 @@
     "declarations": {
       "patterns": [
         {
-          "match": "\\b(define)\\s+(?:(singleton|shared|untrusted|abstract)\\s+)?(class|module|interface|trait|struct|actor|isoactor)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "match": "\\b(define)\\s+(?:(pub|singleton|shared|private|untrusted|isolated|abstract)\\s+){0,3}(class|module|interface|trait|struct|actor)\\s+([A-Za-z_][A-Za-z0-9_]*)",
           "captures": {
             "1": {
               "name": "keyword.declaration.oreslang"
@@ -140,7 +140,7 @@
           }
         },
         {
-          "match": "\\b(?:(shared|untrusted)\\s+)?(actor|isoactor)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "match": "\\b(?:(shared|untrusted|isolated)\\s+)?(actor)\\s+([A-Za-z_][A-Za-z0-9_]*)",
           "captures": {
             "1": {
               "name": "storage.modifier.oreslang"
@@ -225,7 +225,7 @@
           "match": "\\bdefer\\b"
         },
         {
-          "match": "\\b(rt)\\s+(borrow|take|copy|share|ref|unref|deref|proxy|cooperate|ptr)\\b",
+          "match": "\\b(rt)\\s+(borrow|take|copy|share|mut\\s+borrow|proxy|cooperate)\\b",
           "captures": {
             "1": {
               "name": "keyword.other.runtime.oreslang"
@@ -273,11 +273,11 @@
         },
         {
           "name": "keyword.operator.arithmetic.oreslang",
-          "match": "\\+|-|\\*|/|%"
+          "match": "\\+|-|\\*|/"
         },
         {
           "name": "keyword.operator.bitwise.oreslang",
-          "match": "\\||&|\\^|~"
+          "match": "\\||&|~"
         },
         {
           "name": "keyword.operator.arrow.oreslang",
@@ -297,11 +297,11 @@
         },
         {
           "name": "keyword.declaration.oreslang",
-          "match": "\\b(?:define|export|entry|class|module|namespace|interface|trait|struct|actor|isoactor|def|fnc|routine|type|types|impl)\\b"
+          "match": "\\b(?:define|export|entry|class|module|namespace|interface|trait|struct|actor|isolated|def|fnc|routine|type|types|impl)\\b"
         },
         {
           "name": "storage.modifier.oreslang",
-          "match": "\\b(?:extends|implements|abstract|static|pub|private|singleton|untrusted|async|generator|nlex|pure|trap|shared|structural|mut|const|val|let)\\b"
+          "match": "\\b(?:extends|implements|abstract|static|pub|private|singleton|untrusted|async|generator|nlex|pure|trap|shared|critical|suspends|gen|structural|mut|const|val|let)\\b"
         },
         {
           "name": "keyword.other.runtime.oreslang",
@@ -314,10 +314,6 @@
         {
           "name": "constant.language.boolean.oreslang",
           "match": "\\b(?:true|false)\\b"
-        },
-        {
-          "name": "constant.language.null.oreslang",
-          "match": "\\bnull\\b"
         },
         {
           "name": "storage.type.builtin.oreslang",

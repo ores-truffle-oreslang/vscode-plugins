@@ -49,7 +49,20 @@ function severityFor(name) {
 function refreshDocument(document) {
   if (!isOreslang(document)) return;
 
-  const result = scanOreslang(document.getText());
+  // The bundled scanner is deliberately lightweight; large files still get
+  // TextMate coloring without blocking the extension host on unbounded scans.
+  const text = document.getText();
+  if (text.length > 2 * 1024 * 1024) {
+    lexicalDiagnostics.delete(document.uri);
+    for (const editor of vscode.window.visibleTextEditors) {
+      if (editor.document.uri.toString() === document.uri.toString()) {
+        editor.setDecorations(keywordDecoration, []);
+        editor.setDecorations(runtimeGlobalDecoration, []);
+      }
+    }
+    return;
+  }
+  const result = scanOreslang(text);
 
   if (vscode.workspace.getConfiguration('oreslang.diagnostics').get('enabled', true)) {
     const diagnostics = result.diagnostics.map(item => {
@@ -121,9 +134,14 @@ function expandCompilerArgs(document) {
   const workspacePath = workspaceFolder ? workspaceFolder.uri.fsPath : path.dirname(document.uri.fsPath);
   const args = cfg.get('args', ['check', '--format=json', '{file}']);
 
-  return args.map(value => String(value)
-    .replaceAll('{file}', document.uri.fsPath)
-    .replaceAll('{workspaceFolder}', workspacePath));
+  if (!Array.isArray(args) || args.length > 64 ||
+      args.some(value => typeof value !== 'string' || value.length > 4096 || value.includes('\0'))) {
+    throw new TypeError('oreslang.cli.args must be an array of up to 64 bounded strings');
+  }
+  // One-pass expansion prevents placeholder-looking text in a real filename
+  // from being expanded a second time as if it came from configuration.
+  return args.map(value => value.replace(/\{file\}|\{workspaceFolder\}/g,
+    token => token === '{file}' ? document.uri.fsPath : workspacePath));
 }
 
 async function runCompilerCheck(document, interactive) {
@@ -132,6 +150,16 @@ async function runCompilerCheck(document, interactive) {
   const generation = (compilerCheckGenerations.get(key) || 0) + 1;
   compilerCheckGenerations.set(key, generation);
   const version = document.version;
+
+  // A workspace can supply settings and source files; never launch its CLI
+  // automatically (or interactively) until VS Code says it is trusted.
+  if (vscode.workspace.isTrusted !== true) {
+    compilerDiagnostics.delete(document.uri);
+    if (interactive) vscode.window.showWarningMessage(
+      'Trust this workspace before running the Oreslang CLI.'
+    );
+    return;
+  }
 
   const cfg = vscode.workspace.getConfiguration('oreslang.cli');
   const command = String(cfg.get('command', 'oreslang') || '').trim();
@@ -158,10 +186,19 @@ async function runCompilerCheck(document, interactive) {
     return;
   }
 
-  const args = expandCompilerArgs(document);
+  let args;
+  try {
+    args = expandCompilerArgs(document);
+  } catch (error) {
+    compilerDiagnostics.delete(document.uri);
+    if (interactive) vscode.window.showWarningMessage(error.message);
+    return;
+  }
   const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
   const cwd = workspaceFolder ? workspaceFolder.uri.fsPath : path.dirname(document.uri.fsPath);
-  const timeout = cfg.get('timeoutMs', 10000);
+  const suppliedTimeout = Number(cfg.get('timeoutMs', 10000));
+  const timeout = Number.isFinite(suppliedTimeout)
+    ? Math.max(100, Math.min(60000, suppliedTimeout)) : 10000;
 
   await new Promise(resolve => {
     childProcess.execFile(command, args, {
@@ -219,6 +256,9 @@ function activate(context) {
       }
     }),
     vscode.workspace.onDidCloseTextDocument(document => {
+      const key = document.uri.toString();
+      clearTimeout(debounceTimers.get(key));
+      debounceTimers.delete(key);
       lexicalDiagnostics.delete(document.uri);
       compilerDiagnostics.delete(document.uri);
       compilerCheckGenerations.delete(document.uri.toString());

@@ -38,8 +38,8 @@ test('covers current actor, channel, callable, and structural syntax', () => {
   const all = JSON.stringify(grammar);
 
   for (const word of [
-    'actor', 'isoactor', 'untrusted', 'spawn', 'nb', 'select', 'readch', 'writech',
-    'pure', 'trap', 'nlex', 'structural', 'loop', 'block', 'constructor', 'export', 'entry', 'singleton'
+    'actor', 'isolated', 'untrusted', 'spawn', 'nb', 'select', 'readch', 'writech',
+    'pure', 'trap', 'nlex', 'structural', 'critical', 'suspends', 'loop', 'block', 'constructor', 'export', 'entry', 'singleton'
   ]) {
     assert.match(all, new RegExp('\\b' + word + '\\b'));
   }
@@ -66,7 +66,7 @@ test('scopes namespaces, qualified actors/classes, and hot-load entries', () => 
 
 test('covers explicit rt ownership and pointer bridge operations', () => {
   const runtime = JSON.stringify(grammar.repository['runtime-globals'].patterns);
-  for (const word of ['borrow', 'take', 'copy', 'share', 'ref', 'deref', 'ptr']) {
+  for (const word of ['borrow', 'take', 'copy', 'share', 'mut', 'proxy']) {
     assert.match(runtime, new RegExp(word));
   }
 });
@@ -80,4 +80,14 @@ test('recognizes upstream do-match, do-select and new rt proxy/cooperate vocabul
   for (const word of ['proxy', 'cooperate', 'unref']) {
     assert.match(runtime, new RegExp(word));
   }
+});
+
+test('grammar excludes removed language forms and recognizes isolated actors', () => {
+  const modifiers = grammar.repository.declarations.patterns[0].match;
+  assert.match('define pub isolated actor Worker', new RegExp(modifiers));
+  const arithmetic = grammar.repository.operators.patterns.find(p => p.name === 'keyword.operator.arithmetic.oreslang');
+  const bitwise = grammar.repository.operators.patterns.find(p => p.name === 'keyword.operator.bitwise.oreslang');
+  assert.doesNotMatch('%', new RegExp(arithmetic.match));
+  assert.doesNotMatch('^', new RegExp(bitwise.match));
+  assert.doesNotMatch(JSON.stringify(grammar.repository.keywords), /constant.language.null|isoactor/);
 });
