@@ -105,6 +105,9 @@ function scheduleRefresh(document) {
   if (!isOreslang(document)) return;
   const key = document.uri.toString();
   cancelCompilerProcess(key);
+  // The compiler result belongs to the previous saved version. Clear its
+  // squigglies immediately instead of displaying stale results until save.
+  compilerDiagnostics.delete(document.uri);
   const oldTimer = debounceTimers.get(key);
   if (oldTimer) clearTimeout(oldTimer);
   debounceTimers.set(key, setTimeout(() => {
@@ -313,6 +316,8 @@ function activate(context) {
     vscode.workspace.onDidChangeConfiguration(event => {
       if (event.affectsConfiguration('oreslang.cli')) {
         for (const key of [...compilerProcesses.keys()]) cancelCompilerProcess(key);
+        // Changed compiler settings invalidate every previously published run.
+        compilerDiagnostics.clear();
       }
       if (event.affectsConfiguration('oreslang.colors')) rebuildDecorations();
       if (event.affectsConfiguration('oreslang')) {

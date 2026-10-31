@@ -38,6 +38,7 @@ function fixture() {
         return {
           set(uri, records){published.push({name,uri,records});},
           delete(uri){deleted.push({name,uri});},
+          clear(){deleted.push({name,clearedAll:true});},
           dispose(){}
         };
       }
@@ -133,4 +134,20 @@ test('trust revocation and CLI configuration changes prevent publishing a pendin
   assert.equal(f.published.filter(x=>x.name==='oreslang-compiler').length,0);
   f.exports.deactivate();
 });
+
+test('editing a document terminates its in-flight CLI and clears earlier diagnostics immediately', async()=>{
+  const f=fixture();
+  const run=vm.runInContext('runCompilerCheck',getContext(f));
+  const pending=run(f.document,false);
+  const previous=f.processes[0];
+  f.document.version++;
+  f.handlers.change({document:f.document});
+  await pending;
+  assert.equal(previous.kills,1);
+  assert.ok(f.deleted.some(x=>x.name==='oreslang-compiler' && x.uri===f.document.uri));
+  f.complete(previous,'stale after edit');
+  assert.equal(f.published.filter(x=>x.name==='oreslang-compiler').length,0);
+  f.exports.deactivate();
+});
+
 function getContext(f){return f._context;}
