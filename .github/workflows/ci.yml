@@ -74,3 +74,21 @@ jobs:
       - name: Check actual Windows ZIP extraction and manifest path resolution
         shell: pwsh
         run: ./tools/test-windows-bundle.ps1
+
+  vscode-extension-host:
+    name: Native VS Code extension-host smoke (not compiler guest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - name: Install pinned VS Code host and TextMate dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+      - name: Execute real VS Code extension-host language activation test
+        run: xvfb-run -a npm run test:extension-host
