@@ -64,6 +64,30 @@ try {
         }
     }
 
+    # Checkout must preserve the exact Git blob bytes, not just local equality.
+    $gitBlob = (& git -C $root rev-parse 'HEAD:syntaxes/oreslang.tmLanguage.json').Trim()
+    $worktreeBlob = (& git -C $root hash-object --no-filters -- $source).Trim()
+    if ($gitBlob -ne $worktreeBlob) {
+        throw "Windows checkout changed canonical grammar bytes (Git blob $gitBlob, worktree $worktreeBlob)"
+    }
+
+    # Downloaded from the same workflow run's Linux job; no cross-org tokens.
+    $linuxPackages = Join-Path $root 'dist/linux-packages'
+    foreach ($name in @('oreslang-visual-studio-textmate.zip',
+                        'oreslang-intellij-textmate.zip')) {
+        $linuxFile = Join-Path $linuxPackages $name
+        $windowsFile = Join-Path $packageDir $name
+        if (-not (Test-Path -LiteralPath $linuxFile -PathType Leaf)) {
+            throw "Expected same-run Linux artifact missing: $linuxFile"
+        }
+        $linuxSha = (Get-FileHash -LiteralPath $linuxFile -Algorithm SHA256).Hash
+        $windowsSha = (Get-FileHash -LiteralPath $windowsFile -Algorithm SHA256).Hash
+        if ($linuxSha -ne $windowsSha) {
+            throw "Cross-platform deterministic package mismatch for $name : Linux=$linuxSha Windows=$windowsSha"
+        }
+        Write-Output "Linux/Windows identical $name SHA-256 $windowsSha"
+    }
+
     Write-Output "Windows ZIP extraction/layout and exact canonical grammar SHA-256 validated: $sha"
     Write-Output 'This check is not Visual Studio or IntelliJ GUI-host admission.'
 } finally {
