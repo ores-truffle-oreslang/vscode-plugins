@@ -94,9 +94,10 @@ The source fixture [`test/fixtures/editor-compat.ores`](../test/fixtures/editor-
 and machine-readable [expected semantic spans](../test/fixtures/editor-compat.expected.json)
 pin line/needle/category assertions for all four editor hosts. The Node fixture
 tests check these records for unique, valid UTF-16 source spans, **not** actual
-TextMate scopes or editor installation. Some expected Symbol, Unicode and
-compound-keyword scopes depend on grammar hardening in PR #14 and must not be
-declared passing on PR #17's older canonical grammar.
+TextMate scopes or editor installation. This branch imports the exact hardened TextMate grammar blob from PR #14,
+and its real Oniguruma tests assert **all 17 scopes** against canonical and
+exported bytes. This does not import PR #14's separate scanner, Workspace Trust
+or compiler process hardening, and is not evidence of actual editor-host import.
 
 For a native-host acceptance run, use the **same exact-head ZIP/VSIX** that
 passed source CI, record its SHA-256 and the installed host version, open the
