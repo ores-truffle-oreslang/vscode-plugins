@@ -51,13 +51,24 @@ JetBrains supports importing VS Code extensions with `package.json` as TextMate 
 
 Official guide: https://www.jetbrains.com/help/idea/textmate.html
 
-### Claude Code and Codex
+### Claude Code and OpenAI Codex
 
-These are coding agents, not standalone IDE language-extension hosts. Running them **inside a supported editor** retains that editor's Oreslang syntax coloring. Their own terminal responses, diffs and fenced code blocks have separate highlighting engines; neither CLI is known to accept this TextMate extension as a direct language plug-in. Do not claim otherwise based on the editor tests.
+For **Oreslang highlighting while working with these agents**, the supported route is to combine the relevant *IDE's* Oreslang grammar with the agent's IDE integration:
 
-For markdown source examples, label code fences `oreslang` or `ores` when the renderer recognizes it, but do not assume either CLI renders those labels natively. `CLAUDE.md` and `AGENTS.md` may help the agents understand the Oreslang build, syntax and test commands; they **do not install a syntax highlighter**.
+| Host | Oreslang syntax color | Agent integration |
+| --- | --- | --- |
+| VS Code / compatible editor | This repository's Oreslang extension | Claude Code for VS Code or Codex IDE extension |
+| IntelliJ IDEA / JetBrains | The exported Oreslang TextMate bundle from this repository | Claude Code's JetBrains integration or Codex's JetBrains integration |
+| Sublime Text | The Oreslang package in `sublime-text-plugins` | Use an external Claude Code or Codex terminal to edit the same project files |
+| Visual Studio (Windows IDE) | The exported Visual Studio TextMate grammar | Use a compatible external agent workflow; **do not assume** VS Code's extensions install in Visual Studio |
 
-Official Codex TUI documentation: https://learn.chatgpt.com/docs/cli-customization
+**VS Code workflow:** Install the Oreslang VS Code extension and the [Claude Code extension](https://marketplace.visualstudio.com/items?itemName=anthropic.claude-code) or [Codex IDE integration](https://learn.chatgpt.com/docs/ide). Open `*.ores` files in the editor; coloring comes from Oreslang's grammar, not from the agent.
+
+**JetBrains workflow:** Import the Oreslang TextMate bundle under Settings > Editor > TextMate Bundles. Install the [Claude Code JetBrains integration](https://claude.com/product/claude-code) or [Codex JetBrains integration](https://learn.chatgpt.com/docs/ide). The IDE provides code colorization.
+
+**Terminal limitation:** The standalone agent CLIs render their **own** code blocks and diffs. Installing TextMate or Sublime grammars does not register Oreslang as a language in either terminal. Codex's documented `/theme` and `.tmTheme` support change *colors*, not the tokenizer or supported language list: https://learn.chatgpt.com/docs/cli-customization. Do not treat these editor integrations as proof of native Oreslang grammar registration in either TUI.
+
+Write Markdown code fences as `oreslang` or `ores` when a given renderer understands them; otherwise use a supported editor for the actual source view. `CLAUDE.md` and `AGENTS.md` can describe Oreslang tooling to agents but do **not** supply syntax coloring.
 
 ## Acceptance gates
 
