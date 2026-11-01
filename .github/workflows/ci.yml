@@ -18,7 +18,10 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
-      - run: npm test
+      - name: Install pinned TextMate/Oniguruma test dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+      - name: Run unit and actual TextMate-engine regression tests
+        run: npm test
       - name: Export portable editor grammars
         run: node tools/export-portable-textmate.js
       - name: Test portable ZIP packaging
