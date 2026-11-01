@@ -2,3 +2,5 @@
 .github/**
 test/**
 *.vsix
+dist/**
+tools/**
