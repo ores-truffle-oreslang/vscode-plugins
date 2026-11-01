@@ -58,3 +58,7 @@ Language syntax should track the compiler lexer and grammar in:
 ### Compiler compatibility
 
 The editor grammar tracks proposed compiler constructs without changing compiler acceptance. See [docs/compiler-pr-sync.md](docs/compiler-pr-sync.md) for the October 2026 upstream PR matrix and validation gates.
+
+## Additional editors and coding agents
+
+The canonical VS Code TextMate grammar can also be exported for Visual Studio and IntelliJ without maintaining a second grammar. Claude Code and Codex use the highlighting provided by their host editor; their standalone terminal rendering is separate. See [the six-target support matrix and portable export instructions](docs/editor-targets.md).
