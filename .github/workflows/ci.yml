@@ -19,3 +19,16 @@ jobs:
         with:
           node-version: 20
       - run: npm test
+      - name: Export portable editor grammars
+        run: node tools/export-portable-textmate.js
+      - name: Test portable ZIP packaging
+        run: python3 -m unittest discover -s tools -p 'test_*.py' -v
+      - name: Package and validate editor install bundles
+        run: python3 tools/package-portable-textmate.py
+      - name: Upload portable grammar bundles
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: oreslang-portable-editor-bundles
+          path: dist/editor-packages/*.zip
+          if-no-files-found: error
+          retention-days: 14
