@@ -4,3 +4,4 @@ test/**
 *.vsix
 dist/**
 tools/**
+node_modules/**
