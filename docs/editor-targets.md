@@ -6,7 +6,7 @@ TextMate highlighting is lexical, not proof that a program compiles. The Java co
 
 | Product | Delivery | Scope / limitation |
 | --- | --- | --- |
-| Visual Studio Code | Install the extension in this repository | TextMate coloring plus optional extension diagnostics/keyword decorations |
+| Visual Studio Code | Install generated `.vsix` from CI | TextMate coloring plus optional extension diagnostics/keyword decorations |
 | Sublime Text | Install [`sublime-text-plugins`](https://github.com/ores-truffle-oreslang/sublime-text-plugins) | Uses its native `.sublime-syntax`; keep aligned via shared conformance fixtures |
 | Visual Studio (Windows IDE, not VS Code) | Copy exported TextMate grammar to the user-local extensions folder | TextMate coloring; **not** a published VSIX or a verified native language service |
 | IntelliJ IDEA / JetBrains | Import the exported VS Code-format TextMate bundle | TextMate coloring; **not** an IntelliJ PSI parser, formatter or LSP client |
@@ -25,6 +25,16 @@ python3 tools/package-portable-textmate.py
 ~~~
 
 The exporter produces **derived** files in `dist/editor-bundles` and reads the canonical grammar directly. Tests compare the exported files byte-for-byte with the input and ensure file-type/scope registration. The packager verifies that those bytes match the canonical source, rejects executable IntelliJ metadata, and produces deterministic ZIP archives in `dist/editor-packages`.
+
+### VS Code and compatible editors
+
+For an installable extension, download the **`oreslang-vscode-vsix`** artifact from a successful GitHub Actions run. Extract the outer GitHub Actions artifact ZIP and install the contained `oreslang-vscode.vsix`:
+
+~~~sh
+code --install-extension oreslang-vscode.vsix
+~~~
+
+Or open VS Code's Extensions view, choose its menu and **Install from VSIX…**. This is a built VS Code extension including the Oreslang grammar and editor runtime, not a Visual Studio (Windows IDE) VSIX. The CI verifier checks for essential runtime files and byte-identical Oreslang grammar, but an actual VS Code extension-host installation remains a separate acceptance test.
 
 For each successful GitHub Actions run, download the **`oreslang-portable-editor-bundles`** artifact from the run's **Artifacts** section (retained for 14 days). It contains `oreslang-visual-studio-textmate.zip` and `oreslang-intellij-textmate.zip`. The ZIP archives are installable *TextMate grammar bundles*, **not signed marketplace extensions**. SHA-256 archive digests are printed in the job log. The CI artifacts are generated from the exact commit tested.
 
