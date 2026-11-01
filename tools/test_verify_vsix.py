@@ -53,7 +53,7 @@ class VerifyVsixTests(unittest.TestCase):
             VERIFIER.verify_vsix(self.package, self.grammar)
 
     def test_rejects_unsafe_entries(self):
-        for unsafe in ("extension/dist/generated.zip", "extension/test/test.js", "extension/../evil.js"):
+        for unsafe in ("extension/dist/generated.zip", "extension/test/test.js", "extension/.vscode-test/binary", "extension/../evil.js"):
             with self.subTest(unsafe=unsafe):
                 entries = dict(self.members)
                 entries[unsafe] = b"unsafe"
