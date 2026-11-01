@@ -22,6 +22,7 @@ EXCLUDED_PREFIXES = (
     "extension/test/",
     "extension/tools/",
     "extension/node_modules/",
+    "extension/.vscode-test/",
 )
 MAX_TOTAL_UNCOMPRESSED_BYTES = 10 * 1024 * 1024
 
