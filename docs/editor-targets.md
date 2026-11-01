@@ -18,21 +18,25 @@ TextMate highlighting is lexical, not proof that a program compiles. The Java co
 From the VS Code plugin repository:
 
 ~~~sh
-node tools/export-portable-textmate.js
 npm test
+node tools/export-portable-textmate.js
+python3 -m unittest discover -s tools -p 'test_*.py' -v
+python3 tools/package-portable-textmate.py
 ~~~
 
-The exporter produces **derived** files in `dist/editor-bundles` and reads the canonical grammar directly. Tests compare the exported files byte-for-byte with the input and ensure file-type/scope registration.
+The exporter produces **derived** files in `dist/editor-bundles` and reads the canonical grammar directly. Tests compare the exported files byte-for-byte with the input and ensure file-type/scope registration. The packager verifies that those bytes match the canonical source, rejects executable IntelliJ metadata, and produces deterministic ZIP archives in `dist/editor-packages`.
+
+For each successful GitHub Actions run, download the **`oreslang-portable-editor-bundles`** artifact from the run's **Artifacts** section (retained for 14 days). It contains `oreslang-visual-studio-textmate.zip` and `oreslang-intellij-textmate.zip`. The ZIP archives are installable *TextMate grammar bundles*, **not signed marketplace extensions**. SHA-256 archive digests are printed in the job log. The CI artifacts are generated from the exact commit tested.
 
 ### Visual Studio (Windows IDE)
 
-Copy the generated `dist/editor-bundles/visual-studio/Oreslang` folder to:
+Extract `oreslang-visual-studio-textmate.zip` directly into `%USERPROFILE%\.vs\Extensions` so it creates the `Oreslang\Syntaxes` directory. Alternatively, copy the generated `dist/editor-bundles/visual-studio/Oreslang` folder into that same parent directory. Resulting file:
 
 ~~~text
-%USERPROFILE%\.vs\Extensions\Oreslang
+%USERPROFILE%\.vs\Extensions\Oreslang\Syntaxes\oreslang.tmLanguage.json
 ~~~
 
-The resulting grammar is at `%USERPROFILE%\.vs\Extensions\Oreslang\Syntaxes\oreslang.tmLanguage.json`. Reopen any already-open `.ores` files. This is the user-local grammar route documented by Microsoft; packaging a marketplace VSIX with a `.pkgdef` and validation on a Windows IDE runner is a **separate future release gate**.
+Reopen any already-open `.ores` files. This is the user-local grammar route documented by Microsoft; packaging a marketplace VSIX with a `.pkgdef` and validation on a Windows IDE runner is a **separate future release gate**.
 
 Official guide: https://learn.microsoft.com/en-us/visualstudio/ide/adding-visual-studio-editor-support-for-other-languages
 
@@ -40,7 +44,7 @@ Official guide: https://learn.microsoft.com/en-us/visualstudio/ide/adding-visual
 
 1. Confirm **TextMate Bundles** is enabled under Settings > Plugins.
 2. Open Settings > Editor > TextMate Bundles.
-3. Add the generated `dist/editor-bundles/intellij/Oreslang-vscode-bundle` directory.
+3. Extract `oreslang-intellij-textmate.zip` and add the resulting `Oreslang-vscode-bundle` folder, or add the generated `dist/editor-bundles/intellij/Oreslang-vscode-bundle` directory.
 4. Open a `.ores` file and check its highlighting.
 
 JetBrains supports importing VS Code extensions with `package.json` as TextMate bundles; the exported bundle contains only a declaration and grammar, **not executable extension JavaScript**. You can alternatively try importing this repository's root as a VS Code-format TextMate bundle.
