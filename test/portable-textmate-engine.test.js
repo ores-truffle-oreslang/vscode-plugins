@@ -2,7 +2,7 @@
 
 // Real TextMate/Oniguruma tokenization of the canonical grammar and derived
 // exports. This does NOT execute VS Code, Visual Studio or IntelliJ GUI hosts.
-// PR #14's hardened Symbol, Unicode and compound syntax is independently gated.
+// Scope tests use PR #14's exact hardened canonical grammar as integrated here.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
@@ -16,8 +16,7 @@ const fixtureRoot = path.join(__dirname, 'fixtures');
 const expected = JSON.parse(fs.readFileSync(path.join(fixtureRoot, 'editor-compat.expected.json'), 'utf8'));
 const lines = fs.readFileSync(path.join(fixtureRoot, expected.source), 'utf8').split('\n');
 
-// These ten are true for the current branch's canonical grammar. The other
-// seven fixture assertions MUST be made mandatory after PR #14 is integrated.
+// The integrated PR #14 grammar now makes all 17 lexical cases mandatory.
 const enforced = new Map([
   ['actor-declaration', 'keyword.declaration.oreslang'],
   ['actor-type', 'entity.name.type.oreslang'],
@@ -26,18 +25,16 @@ const enforced = new Map([
   ['nested-comment-symbol', 'comment.block.oreslang'],
   ['outer-comment-after-inner', 'comment.block.oreslang'],
   ['keyword-after-outer-close', 'keyword.control.return.oreslang'],
+  ['unquoted-symbol', 'constant.other.symbol.oreslang'],
+  ['quoted-symbol', 'constant.other.symbol.oreslang'],
   ['string-with-control-and-symbol', 'string.quoted.double.oreslang'],
+  ['contextual-equality', 'keyword.operator.comparison.oreslang'],
+  ['symbol-in-comparison', 'constant.other.symbol.oreslang'],
   ['runtime-call', 'support.function.builtin.runtime.oreslang'],
-  ['line-comment-keyword', 'comment.line.double-slash.oreslang']
-]);
-const deferred = new Set([
-  'unquoted-symbol',
-  'quoted-symbol',
-  'contextual-equality',
-  'symbol-in-comparison',
-  'unicode-prefixed-identifier',
-  'compound-critical',
-  'compound-nb'
+  ['line-comment-keyword', 'comment.line.double-slash.oreslang'],
+  ['unicode-prefixed-identifier', null],
+  ['compound-critical', 'keyword.oreslang'],
+  ['compound-nb', 'keyword.oreslang']
 ]);
 
 let onigPromise;
@@ -86,19 +83,24 @@ function tokensForSpan(allTokens, spec) {
   return intersecting;
 }
 
-test('the real TextMate engine enforces the ten pre-PR14 fixture scopes', async () => {
+test('the real TextMate engine enforces all 17 cross-editor lexical scope cases', async () => {
   const ids = new Set(expected.cases.map(x => x.id));
-  assert.equal(expected.cases.length, enforced.size + deferred.size);
-  for (const name of [...enforced.keys(), ...deferred]) {
+  assert.equal(expected.cases.length, 17);
+  assert.equal(enforced.size, expected.cases.length);
+  for (const name of enforced.keys()) {
     assert.ok(ids.has(name), 'fixture category unexpectedly absent: ' + name);
   }
   const tokens = await tokenize(GRAMMAR_PATH);
   for (const scenario of expected.cases) {
-    if (!enforced.has(scenario.id)) continue;
     const scope = enforced.get(scenario.id);
     for (const token of tokensForSpan(tokens, scenario)) {
-      assert.ok(token.scopes.includes(scope),
-        scenario.id + ' should carry ' + scope + ', got ' + JSON.stringify(token.scopes));
+      if (scope === null) {
+        assert.ok(!token.scopes.some(s => s.startsWith('keyword.') || s.startsWith('constant.other.symbol.')),
+          scenario.id + ' must remain a plain identifier, got ' + JSON.stringify(token.scopes));
+      } else {
+        assert.ok(token.scopes.includes(scope),
+          scenario.id + ' should carry ' + scope + ', got ' + JSON.stringify(token.scopes));
+      }
     }
   }
 });
