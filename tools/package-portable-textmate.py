@@ -42,21 +42,37 @@ def expected_files(source: Path = SOURCE, derived: Path = DERIVED) -> dict[str, 
         entries = {}
         for name, source_name in members.items():
             path = derived.joinpath(*source_name.split("/"))
-            if path.is_symlink() or not path.is_file():
+            # Reject both symlink files and symlink parent directories.
+            # Path.is_file() alone follows symlinks and would allow an off-tree read.
+            if any(p.is_symlink() for p in (path, *path.parents) if p == derived or derived in p.parents) or \
+               not path.is_file():
                 raise ValueError("Missing or symlinked derived bundle file: " + source_name)
             data = path.read_bytes()
             if name.endswith(".tmLanguage.json") and data != original:
                 raise ValueError("Derived grammar differs from canonical source: " + source_name)
             if name.endswith("package.json"):
                 manifest = json.loads(data)
+                if (not isinstance(manifest, dict) or
+                    set(manifest) != {"name", "displayName", "version", "contributes"} or
+                    not isinstance(manifest.get("contributes"), dict) or
+                    set(manifest["contributes"]) != {"languages", "grammars"}):
+                    raise ValueError("IntelliJ bundle must contain only declarative metadata")
                 languages = manifest["contributes"]["languages"]
                 grammars = manifest["contributes"]["grammars"]
-                if ".ores" not in languages[0]["extensions"] or \
-                   grammars[0]["scopeName"] != "source.oreslang" or \
-                   grammars[0]["path"] != "./syntaxes/oreslang.tmLanguage.json":
+                if (not isinstance(languages, list) or len(languages) != 1 or
+                    not isinstance(grammars, list) or len(grammars) != 1 or
+                    not isinstance(languages[0], dict) or
+                    not isinstance(grammars[0], dict)):
                     raise ValueError("Derived IntelliJ manifest is missing Oreslang mapping")
-                if "main" in manifest or "scripts" in manifest:
-                    raise ValueError("IntelliJ bundle must contain only declarative metadata")
+                language, grammar_entry = languages[0], grammars[0]
+                if (set(language) != {"id", "aliases", "extensions"} or
+                    language.get("id") != "oreslang" or
+                    language.get("extensions") != [".ores"] or
+                    set(grammar_entry) != {"language", "scopeName", "path"} or
+                    grammar_entry.get("language") != "oreslang" or
+                    grammar_entry.get("scopeName") != "source.oreslang" or
+                    grammar_entry.get("path") != "./syntaxes/oreslang.tmLanguage.json"):
+                    raise ValueError("Derived IntelliJ manifest is missing Oreslang mapping")
             entries[name] = data
         result[archive] = entries
     return result
