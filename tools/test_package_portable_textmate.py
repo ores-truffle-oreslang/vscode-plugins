@@ -34,9 +34,17 @@ class PortableBundleTests(unittest.TestCase):
                     target.write_bytes(self.source.read_bytes())
                 else:
                     target.write_text(json.dumps({
+                        "name": "oreslang-textmate-bundle",
+                        "displayName": "Oreslang",
+                        "version": "0.1.0",
                         "contributes": {
-                            "languages": [{"extensions": [".ores"]}],
+                            "languages": [{
+                                "id": "oreslang",
+                                "aliases": ["Oreslang", "oreslang"],
+                                "extensions": [".ores"]
+                            }],
                             "grammars": [{
+                                "language": "oreslang",
                                 "scopeName": "source.oreslang",
                                 "path": "./syntaxes/oreslang.tmLanguage.json"
                             }]
@@ -75,6 +83,65 @@ class PortableBundleTests(unittest.TestCase):
             archive.writestr("../payload.js", "not an allowed file")
         with self.assertRaisesRegex(ValueError, "Unexpected archive members"):
             MODULE.verify_archives(members, self.archives)
+
+
+    def test_rejects_ambiguous_or_executable_intellij_metadata(self):
+        manifest_path = self.derived / "intellij" / "Oreslang-vscode-bundle" / "package.json"
+        original = json.loads(manifest_path.read_text(encoding="utf-8"))
+        mutations = {
+            "activation events": lambda x: x.update(activationEvents=["*"]),
+            "browser entrypoint": lambda x: x.update(browser="./evil.js"),
+            "extension dependencies": lambda x: x.update(extensionDependencies=["other.extension"]),
+            "scripts": lambda x: x.update(scripts={"postinstall": "node evil.js"}),
+            "unexpected commands": lambda x: x["contributes"].update(commands=[{"command": "oops"}]),
+            "wrong language": lambda x: x["contributes"]["languages"][0].update(id="not-oreslang"),
+            "wrong file extension": lambda x: x["contributes"]["languages"][0].update(extensions=[".txt"]),
+            "duplicate language": lambda x: x["contributes"]["languages"].append(
+                dict(x["contributes"]["languages"][0])),
+            "duplicate grammar": lambda x: x["contributes"]["grammars"].append(
+                dict(x["contributes"]["grammars"][0])),
+            "wrong grammar language": lambda x: x["contributes"]["grammars"][0].update(language="other"),
+            "path traversal": lambda x: x["contributes"]["grammars"][0].update(path="../escape.json"),
+        }
+        for name, modify in mutations.items():
+            with self.subTest(name):
+                manifest = json.loads(json.dumps(original))
+                modify(manifest)
+                manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+                with self.assertRaisesRegex(ValueError, "declarative|mapping"):
+                    MODULE.expected_files(self.source, self.derived)
+        manifest_path.write_text(json.dumps(original), encoding="utf-8")
+
+    def test_rejects_symlinked_parent_directory(self):
+        directory = self.derived / "visual-studio" / "Oreslang" / "Syntaxes"
+        real_directory = directory.with_name("Syntaxes-real")
+        directory.rename(real_directory)
+        try:
+            directory.symlink_to(real_directory, target_is_directory=True)
+        except (OSError, NotImplementedError):
+            self.skipTest("directory symlinks unavailable on this host")
+        with self.assertRaisesRegex(ValueError, "symlinked"):
+            MODULE.expected_files(self.source, self.derived)
+
+    def test_rejects_changed_zip_content_or_metadata(self):
+        entries = MODULE.expected_files(self.source, self.derived)
+        MODULE.write_archives(entries, self.archives)
+        import zipfile
+        name = "oreslang-visual-studio-textmate.zip"
+        member = "Oreslang/Syntaxes/oreslang.tmLanguage.json"
+        archive_path = self.archives / name
+        with zipfile.ZipFile(archive_path, "w") as archive:
+            archive.writestr(member, b"tampered")
+        with self.assertRaisesRegex(ValueError, "content or metadata mismatch"):
+            MODULE.verify_archives(entries, self.archives)
+        MODULE.write_archives(entries, self.archives)
+        with zipfile.ZipFile(archive_path, "w") as archive:
+            info = zipfile.ZipInfo(member, date_time=(2026, 1, 1, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_STORED
+            archive.writestr(info, entries[name][member])
+        with self.assertRaisesRegex(ValueError, "content or metadata mismatch"):
+            MODULE.verify_archives(entries, self.archives)
+
 
 
 if __name__ == "__main__":
