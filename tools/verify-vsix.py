@@ -36,19 +36,33 @@ def verify_vsix(package: Path, grammar: Path = GRAMMAR) -> None:
             raise ValueError("VSIX exceeds uncompressed size budget")
         for member in members:
             parts = member.filename.split("/")
-            if member.filename.startswith("/") or ".." in parts or \
-               "\\" in member.filename or any(member.filename.startswith(x) for x in EXCLUDED_PREFIXES):
+            unix_type = (member.external_attr >> 16) & 0o170000
+            if member.filename.startswith("/") or any(p in (".", "..") for p in parts) or \
+               "\\" in member.filename or unix_type == 0o120000 or \
+               any(member.filename.startswith(x) for x in EXCLUDED_PREFIXES):
                 raise ValueError("Unsafe or unintended VSIX file: " + member.filename)
         if archive.read("extension/syntaxes/oreslang.tmLanguage.json") != grammar.read_bytes():
             raise ValueError("VSIX grammar is not byte-identical to canonical Oreslang grammar")
         manifest = json.loads(archive.read("extension/package.json"))
         if manifest.get("main") != "./extension.js":
             raise ValueError("VSIX package manifest does not target the extension runtime")
-        languages = manifest["contributes"]["languages"]
-        grammars = manifest["contributes"]["grammars"]
-        if ".ores" not in languages[0]["extensions"] or \
-           grammars[0]["scopeName"] != "source.oreslang":
-            raise ValueError("VSIX does not register .ores / source.oreslang")
+        contributions = manifest.get("contributes")
+        if not isinstance(contributions, dict):
+            raise ValueError("VSIX missing declarative language contributions")
+        languages = contributions.get("languages")
+        grammars = contributions.get("grammars")
+        if (not isinstance(languages, list) or len(languages) != 1 or
+            not isinstance(grammars, list) or len(grammars) != 1 or
+            not isinstance(languages[0], dict) or not isinstance(grammars[0], dict)):
+            raise ValueError("VSIX must register exactly one Oreslang language and grammar")
+        language, grammar_entry = languages[0], grammars[0]
+        if (language.get("id") != "oreslang" or
+            not isinstance(language.get("extensions"), list) or
+            language["extensions"] != [".ores"] or
+            grammar_entry.get("language") != "oreslang" or
+            grammar_entry.get("scopeName") != "source.oreslang" or
+            grammar_entry.get("path") != "./syntaxes/oreslang.tmLanguage.json"):
+            raise ValueError("VSIX does not register the expected .ores / source.oreslang grammar path")
 
 
 if __name__ == "__main__":
