@@ -87,3 +87,41 @@ Write Markdown code fences as `oreslang` or `ores` when a given renderer underst
 - Validate imported TextMate scopes in **actual Visual Studio and IntelliJ hosts** before claiming end-user compatibility is verified. Export tests are packaging tests, not in-host execution evidence.
 - For actual CLI-native syntax highlighting, first confirm that Claude Code or Codex offers an officially supported custom-language registration API. A separate Tree-sitter grammar may be valuable for compatible terminal editors, but it does **not** automatically extend either agent's renderer.
 - A first-party JetBrains plugin and a Visual Studio VSIX are future options if users need diagnostics/LSP, language services, publication/discoverability, or automated installation. They can start in this mono-repo; new GitHub repos are optional, not a prerequisite for TextMate support.
+
+## Exact shared host-acceptance fixture
+
+The source fixture [`test/fixtures/editor-compat.ores`](../test/fixtures/editor-compat.ores)
+and machine-readable [expected semantic spans](../test/fixtures/editor-compat.expected.json)
+pin line/needle/category assertions for all four editor hosts. The Node fixture
+tests check these records for unique, valid UTF-16 source spans, **not** actual
+TextMate scopes or editor installation. Some expected Symbol, Unicode and
+compound-keyword scopes depend on grammar hardening in PR #14 and must not be
+declared passing on PR #17's older canonical grammar.
+
+For a native-host acceptance run, use the **same exact-head ZIP/VSIX** that
+passed source CI, record its SHA-256 and the installed host version, open the
+fixture as `.ores`, and map each recorded semantic category to the target
+editor's actual token scopes. Negative assertions must confirm that nested
+comments and strings do not leak keyword/Symbol scopes; the keyword suffix of
+`éreturn` must not be independently matched. Visual inspection of color alone
+is insufficient when themes mask tokenization differences.
+
+- **VS Code:** install the generated VSIX into an isolated extensions directory,
+  verify `oreslang` file association, and use the real extension/TextMate host
+  for scope assertions. Packaging-only checks cannot stand in for this.
+- **Sublime Text:** use the companion native `.sublime-syntax` and Sublime's
+  `syntax_test_*.ores` assertion format with the shared fixture spans. A
+  generic TextMate parser test does not validate Sublime's own syntax engine.
+- **Visual Studio:** use an actual Windows Visual Studio IDE, extract the
+  Visual Studio grammar archive into the documented user-local folder, reopen
+  `.ores` and capture association, effective scopes and version evidence.
+  A ZIP copy or ordinary Windows shell check is not host execution.
+- **IntelliJ:** enable the TextMate Bundles plugin and import the unpacked
+  `Oreslang-vscode-bundle` folder in a pinned IntelliJ IDEA release. Reopen
+  `.ores` and capture plugin/build/version, effective scopes and an import
+  diagnostic. The bundle's `package.json` and archive checks are only
+  source-level tests.
+
+Do not mark these four host rows green without individual execution records.
+Claude Code and Codex may display editor-host coloring but their standalone
+CLI renderers do not automatically load these exported grammars.
