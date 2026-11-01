@@ -3,7 +3,7 @@
   "source": "editor-compat.ores",
   "purpose": "Shared lexical scope assertions for VS Code, Sublime Text, Visual Studio and IntelliJ. Static contract only; no IDE-host pass is implied.",
   "prerequisites": [
-    "source grammar hardening from PR #14 for Symbol and compound keyword cases",
+    "PR #14 hardened TextMate grammar blob integrated on this candidate branch; PR #14 runtime changes remain separate",
     "actual target editor installation and imported grammar"
   ],
   "cases": [
