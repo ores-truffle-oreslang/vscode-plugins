@@ -65,3 +65,17 @@ Language syntax should track the compiler lexer and grammar in:
 ### Compiler compatibility
 
 The editor grammar tracks proposed compiler constructs without changing compiler acceptance. See [docs/compiler-pr-sync.md](docs/compiler-pr-sync.md) for the October 2026 upstream PR matrix and validation gates.
+
+## Additional editors and coding agents
+
+The canonical VS Code TextMate grammar can also be exported for Visual Studio and IntelliJ without maintaining a second grammar. Claude Code and Codex use the highlighting provided by their host editor; their standalone terminal rendering is separate. See [the six-target support matrix and portable export instructions](docs/editor-targets.md).
+
+## Installable VS Code extension
+
+Successful CI runs upload an `oreslang-vscode-vsix` artifact containing the Oreslang VS Code `oreslang-vscode.vsix` file. Download and extract the outer GitHub Actions artifact ZIP; then open **Extensions > Install from VSIX…** in VS Code, or run:
+
+~~~sh
+code --install-extension oreslang-vscode.vsix
+~~~
+
+This VSIX is produced using pinned `@vscode/vsce@4.1.0` packaging and checked for canonical grammar bytes, language registration and expected extension runtime files. It is not a published marketplace release. Instructions for native Sublime, Visual Studio (Windows IDE), IntelliJ, Claude Code and Codex workflows are in [docs/editor-targets.md](docs/editor-targets.md).

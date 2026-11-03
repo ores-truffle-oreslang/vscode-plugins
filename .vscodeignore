@@ -2,3 +2,7 @@
 .github/**
 test/**
 *.vsix
+dist/**
+tools/**
+node_modules/**
+.vscode-test/**

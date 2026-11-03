@@ -1,0 +1,9 @@
+# Keep canonical grammar and editor fixture bytes identical on all CI hosts.
+* text=auto
+*.json text eol=lf
+*.ores text eol=lf
+*.js text eol=lf
+*.py text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.ps1 text eol=lf

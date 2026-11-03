@@ -20,5 +20,75 @@ jobs:
           node-version: "22.20.0"
       - name: Install pinned TextMate/Oniguruma test dependencies
         run: npm install --ignore-scripts --no-audit --no-fund --package-lock=false
-      - name: Run scanner and actual TextMate engine tests
+      - name: Run unit and actual TextMate-engine regression tests
         run: npm test
+      - name: Export portable editor grammars
+        run: node tools/export-portable-textmate.js
+      - name: Test portable ZIP packaging
+        run: python3 -m unittest discover -s tools -p 'test_*.py' -v
+      - name: Package and validate editor install bundles
+        run: python3 tools/package-portable-textmate.py
+      - name: Upload portable grammar bundles
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: oreslang-portable-editor-bundles
+          path: dist/editor-packages/*.zip
+          if-no-files-found: error
+          retention-days: 14
+      - name: Package installable VS Code extension
+        run: npx --yes @vscode/vsce@4.1.0 package --no-dependencies --out dist/oreslang-vscode.vsix
+      - name: Verify VSIX runtime payload and grammar
+        run: python3 tools/verify-vsix.py dist/oreslang-vscode.vsix
+      - name: Upload installable VS Code extension
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: oreslang-vscode-vsix
+          path: dist/oreslang-vscode.vsix
+          if-no-files-found: error
+          retention-days: 14
+
+  windows-bundle-layout:
+    name: Windows archive extraction (not IDE GUI)
+    needs: test
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.11'
+      - name: Export canonical editor grammars
+        run: node tools/export-portable-textmate.js
+      - name: Package deterministic bundles on Windows
+        run: python tools/package-portable-textmate.py
+      - name: Download exact-run Linux ZIPs for cross-platform byte comparison
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: oreslang-portable-editor-bundles
+          path: dist/linux-packages
+      - name: Check actual Windows ZIP extraction and manifest path resolution
+        shell: pwsh
+        run: ./tools/test-windows-bundle.ps1
+
+  vscode-extension-host:
+    name: Native VS Code extension-host smoke (not compiler guest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+      - name: Install pinned VS Code host and TextMate dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+      - name: Execute real VS Code extension-host language activation test
+        run: xvfb-run -a npm run test:extension-host

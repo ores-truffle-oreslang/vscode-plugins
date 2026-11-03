@@ -1,0 +1,113 @@
+{
+  "kind": "oreslang-editor-host-fixture-v1",
+  "source": "editor-compat.ores",
+  "purpose": "Shared lexical scope assertions for VS Code, Sublime Text, Visual Studio and IntelliJ. Static contract only; no IDE-host pass is implied.",
+  "prerequisites": [
+    "PR #14 hardened TextMate grammar blob integrated on this candidate branch; PR #14 runtime changes remain separate",
+    "actual target editor installation and imported grammar"
+  ],
+  "cases": [
+    {
+      "id": "actor-declaration",
+      "line": 2,
+      "needle": "define",
+      "category": "keyword"
+    },
+    {
+      "id": "actor-type",
+      "line": 2,
+      "needle": "Worker",
+      "category": "type"
+    },
+    {
+      "id": "outer-comment-keyword",
+      "line": 3,
+      "needle": "return",
+      "category": "comment"
+    },
+    {
+      "id": "nested-comment-control",
+      "line": 4,
+      "needle": "throw",
+      "category": "comment"
+    },
+    {
+      "id": "nested-comment-symbol",
+      "line": 4,
+      "needle": "#ready",
+      "category": "comment"
+    },
+    {
+      "id": "outer-comment-after-inner",
+      "line": 4,
+      "needle": "raise",
+      "category": "comment"
+    },
+    {
+      "id": "keyword-after-outer-close",
+      "line": 5,
+      "needle": "return",
+      "category": "keyword"
+    },
+    {
+      "id": "unquoted-symbol",
+      "line": 6,
+      "needle": "#ready",
+      "category": "symbol"
+    },
+    {
+      "id": "quoted-symbol",
+      "line": 7,
+      "needle": "#'with spaces'",
+      "category": "symbol"
+    },
+    {
+      "id": "string-with-control-and-symbol",
+      "line": 8,
+      "needle": "\"throw #ready\"",
+      "category": "string"
+    },
+    {
+      "id": "contextual-equality",
+      "line": 9,
+      "needle": "eq",
+      "category": "operator"
+    },
+    {
+      "id": "symbol-in-comparison",
+      "line": 9,
+      "needle": "#ready",
+      "category": "symbol"
+    },
+    {
+      "id": "runtime-call",
+      "line": 10,
+      "needle": "cooperate",
+      "category": "runtime"
+    },
+    {
+      "id": "line-comment-keyword",
+      "line": 14,
+      "needle": "return",
+      "category": "comment"
+    },
+    {
+      "id": "unicode-prefixed-identifier",
+      "line": 15,
+      "needle": "éreturn",
+      "category": "identifier"
+    },
+    {
+      "id": "compound-critical",
+      "line": 16,
+      "needle": "critical-read",
+      "category": "keyword"
+    },
+    {
+      "id": "compound-nb",
+      "line": 17,
+      "needle": "nb-select",
+      "category": "keyword"
+    }
+  ]
+}

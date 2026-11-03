@@ -1,0 +1,17 @@
+// Lexical highlighting fixture only; not compiler acceptance evidence.
+define actor Worker as
+  /* outer return
+     /* inner throw #ready */ raise
+     outer */ return
+  let state = #ready
+  let label = #'with spaces'
+  let message = "throw #ready"
+  if state eq #ready then
+    rt cooperate
+  fi
+end
+
+// return and #ready must remain comments
+éreturn
+critical-read
+nb-select
