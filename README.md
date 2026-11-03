@@ -36,6 +36,13 @@ The defaults are:
 
 The extension does not call `ORESoftware/ores-cli`, does not call a command named `ores`, and does not invoke the Java compiler directly. `oreslang-cli` owns the editor-facing process contract and delegates safely to the non-executing compiler backend.
 
+The extension invokes the CLI only when **VS Code Workspace Trust** is enabled.
+An untrusted workspace receives TextMate highlighting and lightweight scanner
+diagnostics, but cannot launch a configured executable, including through the
+explicit check command. CLI arguments are passed without a shell and placeholders
+are expanded atomically. The lexical scanner skips raw template bodies and
+files over 2 MiB; the compiler remains authoritative for full syntax checks.
+
 Use **Oreslang: Check Current File** to run an explicit compiler check.
 
 ## Development

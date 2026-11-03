@@ -14,6 +14,7 @@ function fixture() {
     workspace: {
       getConfiguration: () => ({get: (_key, fallback) => fallback}),
       getWorkspaceFolder: () => undefined,
+      isTrusted: true,
     },
     Position: class { constructor(line, character) { Object.assign(this, {line, character}); } },
     Range: class { constructor(start, end) { Object.assign(this, {start, end}); } },

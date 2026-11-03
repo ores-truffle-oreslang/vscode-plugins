@@ -29,19 +29,19 @@ test('supports nested block comments like the Oreslang lexer', () => {
   assert.deepEqual(result.tokens.map(t => t.value), ['pub', 'fnc']);
 });
 
-test('keeps is, eq, and neq available as identifiers', () => {
+test('lexer-reserved is, eq and neq are classified as operators', () => {
   const source = 'let is = foo; let eq = bar; let neq = baz; if (is is foo) { return; }';
   const result = scanOreslang(source);
 
-  assert.deepEqual(result.tokens.map(t => t.value), ['let', 'let', 'let', 'if', 'return']);
+  assert.deepEqual(result.tokens.map(t => t.value), ['let','is','let','eq','let','neq','if','is','is','return']);
 });
 
 test('tracks active actor, channel, callable, and structural keywords', () => {
-  const source = 'generator pure trap nlex structural actor isoactor nb select readch writech loop block break continue';
+  const source = 'generator pure trap nlex structural actor isolated critical suspends nb select readch writech loop block break continue';
   const result = scanOreslang(source);
 
   assert.deepEqual(result.tokens.map(t => t.value), [
-    'generator', 'pure', 'trap', 'nlex', 'structural', 'actor', 'isoactor',
+    'generator', 'pure', 'trap', 'nlex', 'structural', 'actor', 'isolated', 'critical', 'suspends',
     'nb', 'select', 'readch', 'writech', 'loop', 'block', 'break', 'continue'
   ]);
 });
@@ -79,4 +79,14 @@ test('matches the common-source ownership and match delimiter contract', () => {
   assert.ok(tokens.includes('match'));
   assert.ok(!tokens.includes('owned'), 'owned is not a public ownership keyword');
   assert.equal(scanOreslang(source).diagnostics.length, 0);
+});
+
+test('raw template literals do not create false keyword or delimiter errors', () => {
+  const result = scanOreslang('const s = `if (x) { unmatched \\` escape /* raw */`; return;');
+  assert.deepEqual(result.tokens.map(t => t.value), ['const', 'return']);
+  assert.equal(result.diagnostics.length, 0);
+});
+test('pinned lexer still reserves null and isoactor (parser acceptance separate)', () => {
+  const values = scanOreslang('null isoactor isolated critical suspends gen').tokens.map(t => t.value);
+  assert.deepEqual(values, ['null','isoactor','isolated', 'critical', 'suspends', 'gen']);
 });
