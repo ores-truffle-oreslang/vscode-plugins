@@ -37,7 +37,7 @@ test('keeps plain compiler diagnostics as a compatibility fallback', () => {
   );
 
   assert.deepEqual(records, [{
-    path: null,
+    path: '/tmp/demo.ores',
     line: 7,
     column: 13,
     endLine: 7,
@@ -83,7 +83,7 @@ test('preserves cross-line ranges and normalizes untrusted severities', () => {
     version: 1,
     diagnostics: [{
       message: 'multiline',
-      path: { bad: true },
+      path: null,
       severity: 'fatal-internal-code',
       range: { start: { line: 4, column: 50 }, end: { line: 5, column: 2 } }
     }]
@@ -92,4 +92,28 @@ test('preserves cross-line ranges and normalizes untrusted severities', () => {
     path: null, line: 4, column: 50, endLine: 5, endColumn: 2,
     severity: 'error', message: 'multiline'
   }]);
+});
+
+test('plain diagnostics retain imported-file paths and Windows drive letters', () => {
+  const records = parseCompilerOutputRecords(
+    'src/imported.ores:2:4: warning: imported issue' + String.fromCharCode(10) +
+    'C:\\\\app\\\\main.ores:3:8: error[EX01]: invalid type'
+  );
+  assert.equal(records.length, 2);
+  assert.equal(records[0].path, 'src/imported.ores');
+  assert.equal(records[0].severity, 'warning');
+  assert.equal(records[1].path, 'C:\\\\app\\\\main.ores');
+  assert.equal(records[1].severity, 'error');
+});
+
+test('malformed explicit JSON diagnostic paths are dropped, not reassigned', () => {
+  const records = parseCompilerOutputRecords(JSON.stringify({
+    version: 1,
+    diagnostics: [
+      {path: {hostile: true}, message: 'wrong owner'},
+      {path: 'imported.ores', message: 'owned by a different file'}
+    ]
+  }));
+  assert.deepEqual(records.map(record => record.message), ['owned by a different file']);
+  assert.equal(records[0].path, 'imported.ores');
 });

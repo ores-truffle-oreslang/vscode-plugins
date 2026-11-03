@@ -16,6 +16,12 @@
       "include": "#numbers"
     },
     {
+      "include": "#symbols"
+    },
+    {
+      "include": "#compound-keywords"
+    },
+    {
       "include": "#annotations"
     },
     {
@@ -112,7 +118,7 @@
     "declarations": {
       "patterns": [
         {
-          "match": "\\b(define)\\s+(?:(singleton|shared|untrusted|abstract)\\s+)?(class|module|interface|trait|struct|actor|isoactor)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "match": "\\b(define)\\s+(?:(pub|singleton|shared|private|untrusted|isolated|abstract)\\s+){0,3}(class|module|interface|trait|struct|actor)\\s+([A-Za-z_][A-Za-z0-9_]*)",
           "captures": {
             "1": {
               "name": "keyword.declaration.oreslang"
@@ -140,7 +146,7 @@
           }
         },
         {
-          "match": "\\b(?:(shared|untrusted)\\s+)?(actor|isoactor)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "match": "\\b(?:(shared|untrusted|isolated)\\s+)?(actor)\\s+([A-Za-z_][A-Za-z0-9_]*)",
           "captures": {
             "1": {
               "name": "storage.modifier.oreslang"
@@ -217,15 +223,11 @@
     "runtime-globals": {
       "patterns": [
         {
-          "name": "support.function.builtin.runtime.oreslang",
-          "match": "\\b(?:recover|throw|raise)\\b"
+          "name": "support.function.global.oreslang",
+          "match": "\\b(?:recover|defer|throw|raise)\\b"
         },
         {
-          "name": "keyword.control.defer.oreslang",
-          "match": "\\bdefer\\b"
-        },
-        {
-          "match": "\\b(rt)\\s+(borrow|take|copy|share|ref|unref|deref|proxy|cooperate|ptr)\\b",
+          "match": "\\b(rt)\\s+(borrow|take|copy|share|mut\\s+borrow|proxy|cooperate)\\b",
           "captures": {
             "1": {
               "name": "keyword.other.runtime.oreslang"
@@ -244,12 +246,8 @@
           "match": "!eq\\b"
         },
         {
-          "match": "(?<=[A-Za-z0-9_\\)\\]\\}\\\"'])\\s+\\b(eq|neq|is)\\b(?=\\s+(?:[A-Za-z_][A-Za-z0-9_]*|[0-9]|[\\(\\[\\{\\\"']))",
-          "captures": {
-            "1": {
-              "name": "keyword.operator.comparison.oreslang"
-            }
-          }
+          "name": "keyword.operator.comparison.oreslang",
+          "match": "\\b(?:eq|neq|is)\\b"
         },
         {
           "name": "keyword.operator.type-test.oreslang",
@@ -297,11 +295,11 @@
         },
         {
           "name": "keyword.declaration.oreslang",
-          "match": "\\b(?:define|export|entry|class|module|namespace|interface|trait|struct|actor|isoactor|def|fnc|routine|type|types|impl)\\b"
+          "match": "\\b(?:define|export|entry|class|module|namespace|interface|trait|struct|actor|isoactor|isolated|def|fnc|routine|type|types|impl)\\b"
         },
         {
           "name": "storage.modifier.oreslang",
-          "match": "\\b(?:extends|implements|abstract|static|pub|private|singleton|untrusted|async|generator|nlex|pure|trap|shared|structural|mut|const|val|let)\\b"
+          "match": "\\b(?:extends|implements|abstract|static|pub|private|singleton|untrusted|async|generator|nlex|pure|trap|shared|critical|suspends|gen|structural|mut|const|val|let)\\b"
         },
         {
           "name": "keyword.other.runtime.oreslang",
@@ -316,16 +314,16 @@
           "match": "\\b(?:true|false)\\b"
         },
         {
-          "name": "constant.language.null.oreslang",
-          "match": "\\bnull\\b"
-        },
-        {
           "name": "storage.type.builtin.oreslang",
           "match": "\\b(?:void|obj|arr)\\b"
         },
         {
           "name": "keyword.control.return.oreslang",
           "match": "\\breturn\\b"
+        },
+        {
+          "name": "keyword.other.lexer-reserved.oreslang",
+          "match": "\\b(?:null|panic|cpu|gpu|conforms|contract|quantum|cb)\\b"
         }
       ]
     },
@@ -338,6 +336,22 @@
         {
           "name": "entity.name.type.oreslang",
           "match": "\\b[A-Z][A-Za-z0-9_]*\\b"
+        }
+      ]
+    },
+    "symbols": {
+      "patterns": [
+        {
+          "name": "constant.other.symbol.oreslang",
+          "match": "#(?:[A-Za-z_][A-Za-z0-9_]{0,127}(?![A-Za-z0-9_])|\"(?:\\\\(?:u[0-9A-Fa-f]{4}|[\"'\\\\])|[^\"\\\\\\r\\n])+\"|'(?:\\\\(?:u[0-9A-Fa-f]{4}|[\"'\\\\])|[^'\\\\\\r\\n])+')"
+        }
+      ]
+    },
+    "compound-keywords": {
+      "patterns": [
+        {
+          "name": "keyword.oreslang",
+          "match": "\\b(?:critical-read|critical-write|nb-select|transform-pipe)\\b"
         }
       ]
     }

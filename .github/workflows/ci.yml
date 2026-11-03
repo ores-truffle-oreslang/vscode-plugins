@@ -17,5 +17,8 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 20
-      - run: npm test
+          node-version: "22.20.0"
+      - name: Install pinned TextMate/Oniguruma test dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+      - name: Run scanner and actual TextMate engine tests
+        run: npm test

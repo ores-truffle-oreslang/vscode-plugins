@@ -100,5 +100,9 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/ores-truffle-oreslang/vscode-plugins.git"
+  },
+  "devDependencies": {
+    "vscode-oniguruma": "2.0.1",
+    "vscode-textmate": "9.3.2"
   }
 }
