@@ -66,6 +66,38 @@ Language syntax should track the compiler lexer and grammar in:
 
 The editor grammar tracks proposed compiler constructs without changing compiler acceptance. See [docs/compiler-pr-sync.md](docs/compiler-pr-sync.md) for the October 2026 upstream PR matrix and validation gates.
 
+## Shared lexer fixture contract
+
+`conformance/oreslang-syntax-v1.json` is copied byte-for-byte into VS Code,
+Sublime Text, and the HTML highlighter. `test/conformance.test.js` verifies
+positive and negative editor-token cases. These are **source-free host checks**,
+not proof that the compiler accepts the examples or that VS Code's actual
+TextMate renderer colors them identically.
+
+The manifest pins the authoritative Java lexer and EBNF blob identities. The
+pinned compiler `main` still recognizes `isoactor`, `null`, `%` and `^`,
+whereas the proposed editor-target contract intentionally excludes them.
+That is an explicit compiler/editor parity discrepancy, **not** a validated
+compiler migration. Review before merging semantics changes.
+
+The shared suite now includes **50 adversarial fixtures**. The tests run
+through regular editor PR CI and validate only the editor-target contract.
+
+**Privacy boundary:** The compiler source repository is private. Public
+workflows must not clone or mirror its source. The removed scheduled watcher
+could not verify private Git blobs via anonymous fetches. Compiler-side
+lexer/parser tests are proposed in private oreslang-source.java PR #2350,
+but currently have zero executed CI steps. Public editor CI is not a proof
+of compiler acceptance, guest execution, or actual TextMate rendering.
+
+## TextMate engine tests
+
+The new textmate-engine test uses the real `vscode-textmate` interpreter and `vscode-oniguruma` WASM to assert token scope boundaries across nested comments, quoted strings, Symbols, compound forms and runtime globals. This does not yet run a VS Code Extension Host, custom color decoration rendering or a compiler.
+
+## Explicit syntax profiles (compiler-current default)
+
+The registered `.ores` editor grammar and `lib/scan.js` preserve the pinned Java lexer `compiler-current` behavior. `lib/scan-target-preview.js` and `syntaxes/oreslang-target-preview.tmLanguage.json` are **unregistered test-only artifacts** for the 50-case proposed target syntax. Do not activate or publish the target preview as compiler parity; `contracts/editor-syntax/v1/profile-reconciliation.json` requires native compiler proof and independent review. The editor's main TextMate tests exercise the proposed preview explicitly; the baseline compiler tests exercise the installed grammar.
+
 ## Additional editors and coding agents
 
 The canonical VS Code TextMate grammar can also be exported for Visual Studio and IntelliJ without maintaining a second grammar. Claude Code and Codex use the highlighting provided by their host editor; their standalone terminal rendering is separate. See [the six-target support matrix and portable export instructions](docs/editor-targets.md).

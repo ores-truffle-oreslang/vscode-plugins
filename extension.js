@@ -1,10 +1,18 @@
 'use strict';
 const compilerCheckGenerations = new Map();
+const compilerProcesses = new Map();
+
+function cancelCompilerProcess(key) {
+  const current = compilerProcesses.get(key);
+  if (current) current.cancel();
+}
 
 const vscode = require('vscode');
 const childProcess = require('child_process');
 const path = require('path');
 const { scanOreslang } = require('./lib/scan');
+const { launchCompiler, terminateProcessTree } = require('./lib/compiler-process');
+const { setTimeout: cliSetTimeout, clearTimeout: cliClearTimeout } = require('node:timers');
 const { parseCompilerOutputRecords } = require('./lib/compiler-output');
 const { matchesCompilerDiagnosticPath } = require('./lib/diagnostic-path');
 
@@ -98,6 +106,10 @@ function refreshDocument(document) {
 function scheduleRefresh(document) {
   if (!isOreslang(document)) return;
   const key = document.uri.toString();
+  cancelCompilerProcess(key);
+  // The compiler result belongs to the previous saved version. Clear its
+  // squigglies immediately instead of displaying stale results until save.
+  compilerDiagnostics.delete(document.uri);
   const oldTimer = debounceTimers.get(key);
   if (oldTimer) clearTimeout(oldTimer);
   debounceTimers.set(key, setTimeout(() => {
@@ -149,6 +161,9 @@ async function runCompilerCheck(document, interactive) {
   const key = document.uri.toString();
   const generation = (compilerCheckGenerations.get(key) || 0) + 1;
   compilerCheckGenerations.set(key, generation);
+  // Superseding a run must release its child and pending Promise, not merely
+  // suppress stale diagnostics after a timeout.
+  cancelCompilerProcess(key);
   const version = document.version;
 
   // A workspace can supply settings and source files; never launch its CLI
@@ -201,15 +216,39 @@ async function runCompilerCheck(document, interactive) {
     ? Math.max(100, Math.min(60000, suppliedTimeout)) : 10000;
 
   await new Promise(resolve => {
-    childProcess.execFile(command, args, {
-      cwd,
-      timeout,
-      maxBuffer: 4 * 1024 * 1024,
-      windowsHide: true
-    }, (error, stdout, stderr) => {
+    let child;
+    let settled = false;
+    let watchdog;
+    const active = {
+      cancel() {
+        if (settled) return;
+        settled = true;
+        if (compilerProcesses.get(key) === active) compilerProcesses.delete(key);
+        cliClearTimeout(watchdog);
+        terminateProcessTree(child);
+        resolve();
+      }
+    };
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      if (compilerProcesses.get(key) === active) compilerProcesses.delete(key);
+      cliClearTimeout(watchdog);
+      resolve();
+    };
+    compilerProcesses.set(key, active);
+    try {
+      child = launchCompiler(childProcess, command, args,
+        {cwd, timeout, maxBuffer: 4 * 1024 * 1024}, (error, stdout, stderr) => {
+      if (settled) return;
+      if (vscode.workspace.isTrusted !== true) {
+        compilerDiagnostics.delete(document.uri);
+        finish();
+        return;
+      }
       if (document.isClosed || document.isDirty || document.version !== version ||
           compilerCheckGenerations.get(key) !== generation) {
-        resolve();
+        finish();
         return;
       }
       const output = [stdout, stderr].filter(Boolean).join('\n');
@@ -233,8 +272,18 @@ async function runCompilerCheck(document, interactive) {
       if (interactive && !error && diagnostics.length === 0) {
         vscode.window.showInformationMessage('oreslang check passed.');
       }
-      resolve();
+      finish();
     });
+      // execFile's timeout kills the leader only; a watchdog also kills
+      // descendants that may have inherited its output pipe.
+      if (!settled) {
+        watchdog = cliSetTimeout(() => active.cancel(), timeout + 100);
+        watchdog.unref?.();
+      }
+    } catch (error) {
+      finish();
+      if (interactive) vscode.window.showWarningMessage('Could not start the Oreslang CLI: ' + error.message);
+    }
   });
 }
 
@@ -259,6 +308,7 @@ function activate(context) {
       const key = document.uri.toString();
       clearTimeout(debounceTimers.get(key));
       debounceTimers.delete(key);
+      cancelCompilerProcess(key);
       lexicalDiagnostics.delete(document.uri);
       compilerDiagnostics.delete(document.uri);
       compilerCheckGenerations.delete(document.uri.toString());
@@ -267,6 +317,11 @@ function activate(context) {
       for (const editor of editors) refreshDocument(editor.document);
     }),
     vscode.workspace.onDidChangeConfiguration(event => {
+      if (event.affectsConfiguration('oreslang.cli')) {
+        for (const key of [...compilerProcesses.keys()]) cancelCompilerProcess(key);
+        // Changed compiler settings invalidate every previously published run.
+        compilerDiagnostics.clear();
+      }
       if (event.affectsConfiguration('oreslang.colors')) rebuildDecorations();
       if (event.affectsConfiguration('oreslang')) {
         for (const editor of vscode.window.visibleTextEditors) refreshDocument(editor.document);
@@ -288,6 +343,8 @@ function activate(context) {
 }
 
 function deactivate() {
+  for (const key of [...compilerProcesses.keys()]) cancelCompilerProcess(key);
+  compilerCheckGenerations.clear();
   for (const timer of debounceTimers.values()) clearTimeout(timer);
   debounceTimers.clear();
 }

@@ -18,10 +18,11 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "22.20.0"
-      - name: Install pinned TextMate/Oniguruma test dependencies
-        run: npm install --ignore-scripts --no-audit --no-fund --package-lock=false
-      - name: Run unit and actual TextMate-engine regression tests
-        run: npm test
+      - name: Install pinned TextMate and Oniguruma test dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm test
+      - name: Validate compiler source pins offline
+        run: node scripts/check-upstream-syntax.mjs
       - name: Export portable editor grammars
         run: node tools/export-portable-textmate.js
       - name: Test portable ZIP packaging
@@ -46,6 +47,7 @@ jobs:
           path: dist/oreslang-vscode.vsix
           if-no-files-found: error
           retention-days: 14
+
 
   windows-bundle-layout:
     name: Windows archive extraction (not IDE GUI)
@@ -78,6 +80,42 @@ jobs:
   vscode-extension-host:
     name: Native VS Code extension-host smoke (not compiler guest)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22.20.0"
+      - name: Install pinned extension test runner
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Run actual VS Code Extension Host with Xvfb
+        run: xvfb-run -a npm run test:extension-host
+
+  vscode-restricted-mode:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22.20.0"
+      - name: Install pinned Extension Host runner
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Run real untrusted-workspace Restricted Mode smoke
+        env:
+          ORESLANG_TEST_MODE: untrusted
+        run: xvfb-run -a npm run test:extension-host
+
+  release-vsix:
+    runs-on: ubuntu-latest
     timeout-minutes: 25
     permissions:
       contents: read
@@ -87,8 +125,15 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 22
-      - name: Install pinned VS Code host and TextMate dependencies
-        run: npm install --ignore-scripts --no-audit --no-fund --package-lock=false
-      - name: Execute real VS Code extension-host language activation test
-        run: xvfb-run -a npm run test:extension-host
+          node-version: "22.20.0"
+      - name: Install pinned VSIX packaging tool and editor test dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Build and validate two byte-identical VSIX release packages
+        run: |
+          mkdir -p dist
+          npm run pack:vsix
+          ./node_modules/.bin/vsce package --no-dependencies --out dist/Oreslang.second.vsix
+          python3 scripts/normalize_vsix.py dist/Oreslang.vsix dist/Oreslang.second.vsix
+          python3 scripts/verify_vsix.py dist/Oreslang.vsix dist/Oreslang.second.vsix
+          sha256sum dist/Oreslang.vsix
+
