@@ -33,6 +33,8 @@ async function runRestricted(executable,root,suite,sandbox) {
 }
 async function main() {
   const root=path.resolve(__dirname,'../..');
+  const fixture=path.join(root,'test','fixtures','editor-compat.ores');
+  if(!fs.statSync(fixture).isFile())throw new Error('Missing exact host fixture');
   const suite=path.join(__dirname,'suite.cjs');
   const mode=process.env.ORESLANG_TEST_MODE==='untrusted'?'untrusted':'trusted';
   const sandbox=fs.mkdtempSync(path.join(os.tmpdir(),'oreslang-vscode-trust-'));
@@ -48,8 +50,10 @@ async function main() {
         version:'1.96.4',
         extensionDevelopmentPath:root,
         extensionTestsPath:suite,
-        launchArgs:['--disable-gpu','--skip-welcome','--skip-release-notes',
-          '--no-sandbox','--disable-dev-shm-usage']
+        launchArgs:[path.dirname(fixture),'--disable-gpu','--skip-welcome','--skip-release-notes',
+          '--no-sandbox','--disable-dev-shm-usage',
+          '--user-data-dir='+path.join(sandbox,'trusted-user'),
+          '--extensions-dir='+path.join(sandbox,'trusted-extensions')]
       });
     }
   }finally{

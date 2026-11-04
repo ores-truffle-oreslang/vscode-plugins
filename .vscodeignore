@@ -12,6 +12,6 @@ scripts/**
 lib/scan-target-preview.js
 syntaxes/oreslang-target-preview.tmLanguage.json
 package-lock.json
-
 .gitignore
 .oreslang/**
+tools/**

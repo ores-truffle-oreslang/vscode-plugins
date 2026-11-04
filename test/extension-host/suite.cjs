@@ -23,6 +23,18 @@ async function run() {
   assert.ok(extension,'Oreslang extension must be enabled in both trust modes');
   await extension.activate();
   assert.equal(extension.isActive,true);
+  // Preserve mainline's native .ores registration, byte-preserving fixture,
+  // extension activation and command-registration assertions.
+  const root=path.resolve(__dirname,'../..');
+  const fixture=path.join(root,'test','fixtures','editor-compat.ores');
+  const expected=JSON.parse(fs.readFileSync(path.join(root,'test','fixtures','editor-compat.expected.json'),'utf8'));
+  assert.equal(expected.cases.length,17);
+  const fileDoc=await vscode.workspace.openTextDocument(vscode.Uri.file(fixture));
+  assert.equal(fileDoc.languageId,'oreslang','host must associate .ores with Oreslang');
+  assert.equal(fileDoc.getText(),fs.readFileSync(fixture,'utf8'),'native host must preserve source bytes');
+  const registered=await vscode.commands.getCommands(true);
+  assert.ok(registered.includes('oreslang.checkCurrentFile'),'native host must register the check command');
+
   assert.equal(vscode.workspace.getConfiguration('oreslang.colors').get('keyword','#FF00FF'),'#FF00FF');
 
   const source='pub fnc run() { return;';
