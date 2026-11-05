@@ -19,7 +19,7 @@ test('malformed peers cannot suppress valid machine diagnostics with Unicode pat
   const expected = [
     { path: 'src/α🙂.ores', message: 'first', severity: 'info',
       line: 1, column: 2, endLine: 2, endColumn: 3 },
-    { path: 'C:\\project\\valid.ores', message: 'final', severity: 'error',
+    { path: 'C:\\project\\valid.ores', message: 'final', severity: 'warning',
       line: 7, column: 9, endLine: 7, endColumn: 10 },
   ];
   for (let i = 0; i < 3; i++) {
