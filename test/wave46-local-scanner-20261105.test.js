@@ -24,6 +24,6 @@ test('NUL or unpaired surrogates inside otherwise opaque source cannot be hidden
     assert.deepEqual(result.tokens, []);
     assert.equal(result.diagnostics.length, 1);
     assert.match(result.diagnostics[0].message, /NUL|unpaired UTF-16 surrogate/);
-    assert.equal(result.diagnostics[0].start, source.search(/[\u0000\uD800\uDC00]/u));
+    assert.equal(result.diagnostics[0].start, source.search(/[\u0000\uD800\uDC00]/));
   }
 });
