@@ -18,8 +18,14 @@ test('legacy fallback never constructs an out-of-policy end column', () => {
 
 test('machine JSON and text fallback agree on invalid implicit end ranges', () => {
   const records = parseCompilerOutputRecords(JSON.stringify({
-    version: 1, diagnostics: [{ path: 'src/bound.ores', line: 2, column: 10000000,
-      message: 'invalid terminal column' }],
+    version: 1, diagnostics: [
+      { path: 'src/bound.ores', line: 2, column: 10000000,
+        message: 'invalid omitted end' },
+      { path: 'src/bound.ores', line: 2, column: 10000000,
+        range: { end: { column: null } }, message: 'invalid null end' },
+      { path: 'src/bound.ores', line: 2, column: 10000000,
+        range: { end: { line: 2, column: 10000001 } }, message: 'invalid explicit end' },
+    ],
   }));
   assert.deepEqual(records, []);
 });
