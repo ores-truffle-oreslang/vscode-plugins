@@ -27,7 +27,7 @@ test('machine records reject out-of-policy start and end ranges independently', 
     {line: 0, column: 1},
     {line: 10000001, column: 1},
     {line: 1.5, column: 1},
-    {line: 1, column: Number.POSITIVE_INFINITY},
+    {line: 1, column: 10000001},
     {line: '1', column: 1},
   ];
   const diagnostics = cases.map((start, i) => ({
