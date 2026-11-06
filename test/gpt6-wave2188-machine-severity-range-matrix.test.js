@@ -11,7 +11,7 @@ test('machine diagnostics isolate invalid range endpoints and normalize severity
     {path:'x.atto',message:'same point',range:{start:{line:2,column:2},end:{line:2,column:2}}},
     {path:'x.atto',message:'reversed line',range:{start:{line:8,column:2},end:{line:7,column:3}}},
     {path:'x.atto',message:'beyond max',range:{start:{line:1,column:1},end:{line:1,column:10000001}}},
-    {path:'x.atto',message:'infinite',range:{start:{line:1,column:Infinity}}},
+    {path:'x.atto',message:'infinite',range:{start:{line:1,column:'Infinity'}}},
     {path:'x.atto',message:'invalid array',range:[]},
     {path:'x.atto',message:'missing end from max column',line:1,column:10000000},
     {path:'b.atto',severity:'HINT',message:'  second  ',
