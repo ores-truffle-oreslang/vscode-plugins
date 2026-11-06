@@ -8,7 +8,7 @@ test('versioned machine JSON rejects malformed peers but retains ordered valid d
     {path:'src/main.atto', message:'first 🍊', severity:'info',
       range:{start:{line:7,column:9},end:{line:7,column:13}}},
     {path:'forged.atto', message:'bad range',range:{start:[1,2]}},
-    {path:'forged.atto', message:'bad finite',range:{start:{line:Infinity,column:2}}},
+    {path:'forged.atto', message:'bad finite',range:{start:{line:'Infinity',column:2}}},
     {path:'src/other.atto', message:'second', severity:'warning',
       range:{start:{line:4,column:3},end:{line:5,column:1}}},
     {path:'forged\0path.atto', message:'NUL path',line:1,column:1},
