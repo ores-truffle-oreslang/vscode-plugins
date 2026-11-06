@@ -31,7 +31,7 @@ test('invalid peer records fail closed without poisoning a valid machine range',
     {message:'zero column',column:0},
     {message:'explicit bad path',path:['src/main.atto']},
     {message:'invalid NUL',path:'src/\0main.atto'},
-    {message:'empty'},
+    {message:'   '},
   ];
   const input=JSON.stringify({version:1,diagnostics:[...invalid.slice(0,3),valid,...invalid.slice(3)]});
   assert.deepEqual(parseCompilerOutputRecords(input),[{
