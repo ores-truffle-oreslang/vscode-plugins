@@ -19,7 +19,7 @@ test('mismatched closing delimiter does not discard the current unmatched opener
 });
 
 test('opaque nested delimiters never affect balanced outer stack or later tokens', () => {
-  const source = '({ /* [ } ( ] /* [ */ } ) return';
+  const source = '({ /* [ } ( ] /* [ */ still */ } ) return';
   const result = scanOreslang(source);
   assert.deepEqual(result.diagnostics, []);
   assert.deepEqual(result.tokens.map(t=>[t.kind,t.value]),[['keyword','return']]);
