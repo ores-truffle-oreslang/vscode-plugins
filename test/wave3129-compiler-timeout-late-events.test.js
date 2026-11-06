@@ -12,6 +12,9 @@ test('timeout terminates isolated compiler and ignores late close/error events',
   child.kill = signal => { assert.equal(signal, 'SIGKILL'); kills++; return true; };
   const results = [];
   await new Promise((resolve, reject) => {
+    // launchCompiler intentionally unrefs its timeout timer. A referenced
+    // watchdog keeps this synthetic child test alive until the callback.
+    const watchdog = setTimeout(() => reject(new Error('compiler timeout callback never fired')), 1000);
     launchCompiler({spawn: (_cmd, _args, opts) => {
       assert.equal(opts.shell, false);
       assert.equal(opts.detached, process.platform !== 'win32');
@@ -19,6 +22,7 @@ test('timeout terminates isolated compiler and ignores late close/error events',
     }}, 'oreslang', ['check'], {cwd: process.cwd(), timeout: 30, maxBuffer: 64},
     (error, stdout, stderr) => {
       results.push({error, stdout, stderr});
+      clearTimeout(watchdog);
       resolve();
     });
     child.stdout.emit('data', Buffer.from('partial'));
