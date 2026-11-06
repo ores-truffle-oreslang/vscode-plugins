@@ -29,10 +29,14 @@
         "aliases": [
           "Oreslang",
           "oreslang",
-          "ores"
+          "ores",
+          "AttoLang",
+          "attolang",
+          "atto"
         ],
         "extensions": [
-          ".ores"
+          ".ores",
+          ".atto"
         ],
         "configuration": "./language-configuration.json"
       }

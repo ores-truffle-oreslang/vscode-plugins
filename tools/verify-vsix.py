@@ -59,11 +59,11 @@ def verify_vsix(package: Path, grammar: Path = GRAMMAR) -> None:
         language, grammar_entry = languages[0], grammars[0]
         if (language.get("id") != "oreslang" or
             not isinstance(language.get("extensions"), list) or
-            language["extensions"] != [".ores"] or
+            language["extensions"] != [".ores", ".atto"] or
             grammar_entry.get("language") != "oreslang" or
             grammar_entry.get("scopeName") != "source.oreslang" or
             grammar_entry.get("path") != "./syntaxes/oreslang.tmLanguage.json"):
-            raise ValueError("VSIX does not register the expected .ores / source.oreslang grammar path")
+            raise ValueError("VSIX does not register the expected .ores/.atto / source.oreslang grammar path")
 
 
 if __name__ == "__main__":

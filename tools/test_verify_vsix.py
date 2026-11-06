@@ -23,7 +23,7 @@ class VerifyVsixTests(unittest.TestCase):
             "extension/package.json": json.dumps({
                 "main": "./extension.js",
                 "contributes": {
-                    "languages": [{"id": "oreslang", "extensions": [".ores"]}],
+                    "languages": [{"id": "oreslang", "extensions": [".ores", ".atto"]}],
                     "grammars": [{
                         "language": "oreslang",
                         "scopeName": "source.oreslang",
@@ -67,7 +67,11 @@ class VerifyVsixTests(unittest.TestCase):
         mutations = {
             "wrong language ID": lambda x: x["contributes"]["languages"][0].update(id="other"),
             "wrong extension": lambda x: x["contributes"]["languages"][0].update(extensions=[".txt"]),
-            "extra extension": lambda x: x["contributes"]["languages"][0].update(extensions=[".ores", ".txt"]),
+            "extra extension": lambda x: x["contributes"]["languages"][0].update(extensions=[".ores", ".atto", ".txt"]),
+            "missing AttoLang extension": lambda x: x["contributes"]["languages"][0].update(extensions=[".ores"]),
+            "missing legacy extension": lambda x: x["contributes"]["languages"][0].update(extensions=[".atto"]),
+            "swapped extension order": lambda x: x["contributes"]["languages"][0].update(extensions=[".atto", ".ores"]),
+            "duplicate extension": lambda x: x["contributes"]["languages"][0].update(extensions=[".ores", ".atto", ".atto"]),
             "wrong grammar language": lambda x: x["contributes"]["grammars"][0].update(language="other"),
             "wrong scope": lambda x: x["contributes"]["grammars"][0].update(scopeName="source.other"),
             "wrong grammar path": lambda x: x["contributes"]["grammars"][0].update(path="./syntaxes/other.json"),
