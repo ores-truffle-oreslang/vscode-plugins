@@ -1,0 +1,11 @@
+# VS Code extension code-owner review policy. Enforcement requires main branch protection.
+* @ORESoftware
+/.github/ @ORESoftware
+/lib/ @ORESoftware
+/test/ @ORESoftware
+/tools/ @ORESoftware
+/scripts/ @ORESoftware
+/syntaxes/ @ORESoftware
+/extension.js @ORESoftware
+/package.json @ORESoftware
+/package-lock.json @ORESoftware
