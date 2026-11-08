@@ -111,3 +111,14 @@ code --install-extension oreslang-vscode.vsix
 ~~~
 
 This VSIX is produced using pinned `@vscode/vsce@4.1.0` packaging and checked for canonical grammar bytes, language registration and expected extension runtime files. It is not a published marketplace release. Instructions for native Sublime, Visual Studio (Windows IDE), IntelliJ, Claude Code and Codex workflows are in [docs/editor-targets.md](docs/editor-targets.md).
+
+## Repository ownership and migration (2026-11-08)
+
+**AttoLang** is the public language name; the current repository is still `ores-truffle-oreslang/vscode-plugins` (legacy namespace). Preserve existing `oreslang-*` identifiers, old commands and `.ores` compatibility until migration and feature support are independently verified.
+
+- **Belongs here:** VS Code language highlighting, LSP integration, editor workflows and tests.
+- **Does not belong here:** compiler backend lowering or commercial hosting control.
+- **Ownership:** [`atto-lang`](https://github.com/atto-lang) owns language, compiler, tooling, portable core/std, conformance and developer ecosystem; [`atto-co`](https://github.com/atto-co) owns separately governed hosted runtime, deployment, identity, billing and cloud operations. An existing similarly named `atto-*` repo does not automatically contain this repo's code or retain its numeric identity.
+- **Proposed first destination:** `atto-lang/vscode-plugins` via an approved *GitHub repository transfer* preserving numeric ID/history/name. The existing plan authorizes **no** direct legacy-org transfer to `atto-co`; future product spinouts need their own approval.
+
+**Cutover instructions:** coordinate in [migration issue #26](https://github.com/ores-truffle-oreslang/.github/issues/26) and consult the private [runbook draft #25](https://github.com/ores-truffle-oreslang/.github/pull/25). Require named source/target admins and independent security reviewer, exact head SHA/tree, target protection/rulesets, permissions, Actions and actual executed steps, secrets, releases, Pages, packages, apps, webhooks, open PRs, consumers and rollback owner before any transfer; never mirror private code without separate authorization. Verify unchanged GitHub ID/tree and control parity afterward, update clients separately, and execute exact-head tests. Zero-step Actions are `NOT_EXECUTED`; host-only checks are not compiled-guest evidence. No forced language/CLI rename or production capability claims.
